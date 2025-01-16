@@ -1,5 +1,3 @@
-// lib/view/Web/drawer.dart
-
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -10,14 +8,14 @@ class CustomDrawer extends StatelessWidget {
   CustomDrawer({
     required this.selectedPage,
     required this.onPageSelected,
-    required this.context, // Truyền BuildContext từ Dashboard_web
+    required this.context,
   });
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
       child: Container(
-        color: Colors.white, // Đặt màu nền của Drawer
+        color: Colors.white,
         child: Column(
           children: [
             Expanded(
@@ -136,9 +134,9 @@ class CustomDrawer extends StatelessWidget {
         boxShadow: title == 'Tổng quan'
             ? [
           BoxShadow(
-            color: Colors.black45, // Màu bóng đổ
-            blurRadius: 2, // Độ mờ của bóng
-            offset: Offset(0, 2), // Vị trí bóng (X: 0, Y: 2)
+            color: Colors.black45,
+            blurRadius: 2,
+            offset: Offset(0, 2),
           )
         ]
             : [],

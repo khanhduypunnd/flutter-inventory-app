@@ -10,7 +10,6 @@ import 'inventory/adjust_inventory/adjust_inventory.dart';
 import 'inventory/adjust_history/adjust_inventory_history.dart';
 import 'promotion/new_promotion.dart';
 import 'promotion/list_promotion.dart';
-import 'promotion/new_promotion.dart';
 import 'report/analysis.dart';
 import 'setting/setting_screen.dart';
 import 'drawer.dart';
@@ -45,7 +44,10 @@ class DashboardWeb extends StatefulWidget {
 class _DashboardWebState extends State<DashboardWeb> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String _selectedPage = '';
-  bool _isDrawerOpen = false;
+  late double maxWidth;
+  bool _isDrawerOpen = true;
+
+  final Map<String, bool> _expandedTiles = {};
 
   @override
   void initState() {
@@ -54,17 +56,21 @@ class _DashboardWebState extends State<DashboardWeb> {
     _selectedPage = 'Tổng quan';
   }
 
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    maxWidth = MediaQuery.of(context).size.width;
+  }
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    bool isScreenWide = screenWidth > 500;
-
+    bool isScreenWide =  maxWidth > 800;
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text( _selectedPage.isEmpty ? "Tổng quan" : _selectedPage,),
-        backgroundColor: AppColors.tabbarColor,
+        backgroundColor: AppColors.backgroundColor,
         leading: isScreenWide
             ? null
             :
@@ -87,14 +93,20 @@ class _DashboardWebState extends State<DashboardWeb> {
                 },
               ),
       ),
-      drawer: Drawer(
+      drawer: isScreenWide ? null : Drawer(
         child: Container(
           color: Colors.white,
-          child: _buildDrawer(),
+          child: _buildDrawer(isScreenWide),
         ),
       ),
       body: Row(
         children: [
+          if (isScreenWide)
+            Container(
+              width: 200,
+              color: AppColors.backgroundColor,
+              child: _buildDrawer(isScreenWide),
+            ),
           Expanded(
             child: Navigator(
               key: widget.navigatorKey,
@@ -110,7 +122,7 @@ class _DashboardWebState extends State<DashboardWeb> {
     );
   }
 
-  Widget _buildDrawer() {
+  Widget _buildDrawer(bool isScreenWide) {
     return Column(
       children: [
         Expanded(
@@ -151,8 +163,14 @@ class _DashboardWebState extends State<DashboardWeb> {
                           : FontWeight.normal,
                     ),
                   ),
-                  onTap: () => _onPageSelected('Tổng quan'),
-                  selected: _selectedPage == 'Tổng quan',
+                  onTap: () {
+                    setState(() {
+                      _selectedPage = 'Tổng quan';
+                    });
+                    if (!isScreenWide) {
+                      Navigator.pop(context);
+                    }
+                  },
                 ),
               ),
               //Don hang
@@ -178,6 +196,11 @@ class _DashboardWebState extends State<DashboardWeb> {
                     ),
                   ),
                   initiallyExpanded: _selectedPage.contains('Đơn hàng'),
+                  onExpansionChanged: (bool expanded) {
+                    setState(() {
+                      _expandedTiles['Đơn hàng'] = expanded;
+                    });
+                  },
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(15),
@@ -195,7 +218,7 @@ class _DashboardWebState extends State<DashboardWeb> {
                                         color: Colors.black.withOpacity(0.3),
                                         blurRadius: 2,
                                         spreadRadius: 1,
-                                        offset: const Offset(0, 2), // Vị trí bóng (X: 0, Y: 2)
+                                        offset: const Offset(0, 2),
                                       )
                                     ]
                                   : [],
@@ -216,6 +239,13 @@ class _DashboardWebState extends State<DashboardWeb> {
                             setState(() {
                               _selectedPage = 'Đơn hàng > Tất cả đơn hàng';
                             });
+                            if (isScreenWide) {
+                              setState(() {
+                                _expandedTiles['Đơn hàng'] = false;
+                              });
+                            } else {
+                              Navigator.pop(context);
+                            }
                           },
                         ),
                       ),
@@ -244,6 +274,11 @@ class _DashboardWebState extends State<DashboardWeb> {
                     ),
                   ),
                   initiallyExpanded: _selectedPage.contains('Sản phẩm'),
+                  onExpansionChanged: (bool expanded) {
+                    setState(() {
+                      _expandedTiles['Sản phẩm'] = expanded;
+                    });
+                  },
                   children: [
                     ClipRRect(
                       child: Container(
@@ -271,6 +306,13 @@ class _DashboardWebState extends State<DashboardWeb> {
                             setState(() {
                               _selectedPage = 'Sản phẩm > Tất cả sản phẩm';
                             });
+                            if (isScreenWide) {
+                              setState(() {
+                                _expandedTiles['Sản phẩm > Tất cả sản phẩm'] = false;
+                              });
+                            } else {
+                              Navigator.pop(context);
+                            }
                           },
                         ),
                       ),
@@ -300,6 +342,13 @@ class _DashboardWebState extends State<DashboardWeb> {
                             setState(() {
                               _selectedPage = 'Sản phẩm > Sản phẩm mới';
                             });
+                            if (isScreenWide) {
+                              setState(() {
+                                _isDrawerOpen = false;
+                              });
+                            } else {
+                              Navigator.pop(context);
+                            }
                           },
                         ),
                       ),
@@ -317,9 +366,9 @@ class _DashboardWebState extends State<DashboardWeb> {
                   boxShadow: _selectedPage == 'Khách hàng'
                       ? [
                           const BoxShadow(
-                            color: Colors.black45, // Màu bóng đổ
-                            blurRadius: 2, // Độ mờ của bóng
-                            offset: Offset(0, 2), // Vị trí bóng (X: 0, Y: 2)
+                            color: Colors.black45,
+                            blurRadius: 2,
+                            offset: Offset(0, 2),
                           )
                         ]
                       : [],
@@ -346,6 +395,13 @@ class _DashboardWebState extends State<DashboardWeb> {
                     setState(() {
                       _selectedPage = 'Khách hàng';
                     });
+                    if (isScreenWide) {
+                      setState(() {
+                        _isDrawerOpen = false;
+                      });
+                    } else {
+                      Navigator.pop(context);
+                    }
                   },
                 ),
               ),
@@ -398,6 +454,13 @@ class _DashboardWebState extends State<DashboardWeb> {
                               _selectedPage =
                                   'Quản lý tồn kho > Chi tiết tồn kho';
                             });
+                            if (isScreenWide) {
+                              setState(() {
+                                _isDrawerOpen = false;
+                              });
+                            } else {
+                              Navigator.pop(context);
+                            }
                           },
                         ),
                       ),
@@ -429,6 +492,13 @@ class _DashboardWebState extends State<DashboardWeb> {
                               _selectedPage =
                                   'Quản lý tồn kho > Phiếu điều chỉnh';
                             });
+                            if (isScreenWide) {
+                              setState(() {
+                                _isDrawerOpen = false;
+                              });
+                            } else {
+                              Navigator.pop(context);
+                            }
                           },
                         ),
                       ),
@@ -459,6 +529,13 @@ class _DashboardWebState extends State<DashboardWeb> {
                             setState(() {
                               _selectedPage = 'Quản lý tồn kho > Lịch sử';
                             });
+                            if (isScreenWide) {
+                              setState(() {
+                                _isDrawerOpen = false;
+                              });
+                            } else {
+                              Navigator.pop(context);
+                            }
                           },
                         ),
                       ),
@@ -514,6 +591,13 @@ class _DashboardWebState extends State<DashboardWeb> {
                             setState(() {
                               _selectedPage = 'Khuyến mãi > Tất cả khuyến mãi';
                             });
+                            if (isScreenWide) {
+                              setState(() {
+                                _isDrawerOpen = false;
+                              });
+                            } else {
+                              Navigator.pop(context);
+                            }
                           },
                         ),
                       ),
@@ -542,9 +626,15 @@ class _DashboardWebState extends State<DashboardWeb> {
                           ),
                           onTap: () {
                             setState(() {
-                              // _onPageSelected("Khuyến mãi > Khuyến mãi mới");
                               _selectedPage = 'Khuyến mãi > Khuyến mãi mới';
                             });
+                            if (isScreenWide) {
+                              setState(() {
+                                _isDrawerOpen = false;
+                              });
+                            } else {
+                              Navigator.pop(context);
+                            }
                           },
                         ),
                       ),
@@ -599,6 +689,13 @@ class _DashboardWebState extends State<DashboardWeb> {
                             setState(() {
                               _selectedPage = 'Báo cáo > Bảng phân tích';
                             });
+                            if (isScreenWide) {
+                              setState(() {
+                                _isDrawerOpen = false;
+                              });
+                            } else {
+                              Navigator.pop(context);
+                            }
                           },
                         ),
                       ),
@@ -627,34 +724,65 @@ class _DashboardWebState extends State<DashboardWeb> {
             setState(() {
               _selectedPage = 'Cấu hình';
             });
+            if (isScreenWide) {
+              setState(() {
+                _isDrawerOpen = false;
+              });
+            } else {
+              Navigator.pop(context);
+            }
           },
         ),
       ],
     );
   }
 
+  // void _onPageSelected(String page) {
+  //   Navigator.pop(context);
+  //   if (kDebugMode) {
+  //     print("Đang chọn trang: $page");
+  //   }
+  //   setState(() {
+  //     _selectedPage = page;
+  //   });
+  //   widget.navigatorKey.currentState!.pushAndRemoveUntil(
+  //     MaterialPageRoute(builder: (context) => _buildPage(page)),
+  //     (Route<dynamic> route) =>
+  //         false,
+  //   );
+  // }
+
   void _onPageSelected(String page) {
-    Navigator.pop(context);
-    if (kDebugMode) {
-      print("Đang chọn trang: $page");
+
+    if (MediaQuery.of(context).size.width > 800) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return _buildPage(page);
+          },
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOut;
+
+            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            var offsetAnimation = animation.drive(tween);
+
+            return SlideTransition(position: offsetAnimation, child: child);
+          },
+        ),
+      );
+    } else {
+      setState(() {
+        _selectedPage = page;
+      });
+      Navigator.pop(context);
     }
-    setState(() {
-      _selectedPage = page;
-    });
-    widget.navigatorKey.currentState!.pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => _buildPage(page)),
-      (Route<dynamic> route) =>
-          false,
-    );
   }
 
   Widget _buildPage(String page) {
-    if (widget.navigatorKey.currentState?.canPop() ?? false) {
-      widget.navigatorKey.currentState?.pop();
-    }
-    if (kDebugMode) {
-      print(page);
-    }
+
     switch (page) {
       case 'Tổng quan':
         return DashboardPage();
@@ -675,16 +803,11 @@ class _DashboardWebState extends State<DashboardWeb> {
       case 'Khuyến mãi > Tất cả khuyến mãi':
         return ListPromotion();
       case 'Khuyến mãi > Khuyến mãi mới':
-        // return add_promotion(
-        //   navigatorKey: widget.navigatorKey,
-        // );
         return NewPromotion();
-      case 'Khuyến mãi > Khuyến mãi mới > Tạo mã':
-        return const NewPromotion();
       case 'Báo cáo > Bảng phân tích':
         return const Analysis();
       case 'Cấu hình':
-        return const setting();
+        return const SettingScreenetting();
       default:
         return const Center(child: Text("Màn hình không tồn tại"));
     }
