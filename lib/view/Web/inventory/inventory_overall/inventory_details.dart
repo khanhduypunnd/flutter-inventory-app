@@ -61,7 +61,7 @@ class _InventoryDetailsState extends State<InventoryDetails> {
     });
 
     try {
-      final url = Uri.parse('http://localhost:9999/api/products');
+      final url = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/products');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {

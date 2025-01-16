@@ -16,17 +16,17 @@ class AdjustInventBonusDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity, // Đặt chiều rộng tự động
-      height: 200, // Đặt chiều cao cố định
+      width: double.infinity,
+      height: 200,
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
+            color: Colors.grey,
             blurRadius: 5,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -36,15 +36,7 @@ class AdjustInventBonusDetail extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Kho thay đổi", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.titleColor)),
-              Text(warehouseChange),
-            ],
-          ),
-          SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Số lượng lệch tăng"),
+              Text("Số lượng lệch tăng", style: TextStyle(color: AppColors.titleColor),),
               Text("$increaseAmount"),
             ],
           ),
@@ -52,7 +44,7 @@ class AdjustInventBonusDetail extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Số lượng lệch giảm"),
+              Text("Số lượng lệch giảm", style: TextStyle(color: AppColors.titleColor)),
               Text("$decreaseAmount"),
             ],
           ),

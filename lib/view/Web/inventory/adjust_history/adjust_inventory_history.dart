@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/core/theme/colors_app.dart';
+import 'adjust_inven_detail.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../../../data/gan.dart';
@@ -16,6 +17,7 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
   int currentPage = 1;
   int totalChecks = 0;
   List<Map<String, dynamic>> adjustments = [];
+  List<Map<String, dynamic>> adjustments_details = [];
   bool isLoading = false;
 
   @override
@@ -30,44 +32,74 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
     });
 
     try {
-      final url = Uri.parse('http://localhost:9999/api/grn');
+      final url = Uri.parse(
+          'https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/grn');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        // print(data);
-
         setState(() {
-          adjustments = data['data'].map<Map<String, dynamic>>((item) {
+          adjustments =
+              (data as List<dynamic>? ?? []).map<Map<String, dynamic>>((item) {
             final adjustment = GAN(
               ganId: item['ganId'] ?? '',
               staffId: item['sId'] ?? '',
-              date: DateTime.fromMillisecondsSinceEpoch(item['date']['_seconds'] * 1000),
+              date: DateTime.fromMillisecondsSinceEpoch(
+                  item['date']['_seconds'] * 1000),
               increasedQuantity: item['increasedQuantity'] ?? 0,
-              descreaedQuantity: item['descreaedQuantity'] ?? 0,
+              decreasedQuantity: item['descreaedQuantity'] ?? 0,
               note: item['note'] ?? '',
             );
 
+            final details = (item['details'] as List<dynamic>? ?? [])
+                .map<Map<String, dynamic>>((detail) {
+              final adjustmentsDetail = GANDetail(
+                ganId: detail['ganId'] ?? '',
+                productId: detail['pid'] ?? '',
+                size: (detail['size'] as List<dynamic>?)
+                        ?.map((s) => s.toString())
+                        .toList() ??
+                    [],
+                oldQuantity:
+                    int.tryParse(detail['oldQuantity']?.toString() ?? '0') ?? 0,
+                newQuantity:
+                    int.tryParse(detail['newQuantity']?.toString() ?? '0') ?? 0,
+              );
+
+              return {
+                "ganId": adjustmentsDetail.ganId,
+                "pid": adjustmentsDetail.productId,
+                "size": adjustmentsDetail.size,
+                "oldQuantity": adjustmentsDetail.oldQuantity,
+                "newQuantity": adjustmentsDetail.newQuantity,
+              };
+            }).toList();
+
             return {
               "ganId": adjustment.ganId,
-              "staffId": adjustment.staffId,
+              "sId": adjustment.staffId,
               "date": adjustment.date.toIso8601String(),
-              "increasedQuantity": adjustment.increasedQuantity.toString(),
-              "descreaedQuantity": adjustment.descreaedQuantity.toString(),
+              "increasedQuantity": adjustment.increasedQuantity,
+              "decreasedQuantity": adjustment.decreasedQuantity,
               "note": adjustment.note,
+              "details": details,
             };
           }).toList();
-          totalChecks = data['total'] ?? adjustments.length;
+
+          adjustments.sort((a, b) {
+            final dateA = DateTime.parse(a['date']);
+            final dateB = DateTime.parse(b['date']);
+            return dateB.compareTo(dateA);
+          });
+
+          totalChecks = adjustments.length;
         });
       } else {
         throw Exception('Failed to fetch data: ${response.body}');
       }
     } catch (error) {
       print('Error fetching adjustments: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi khi tải dữ liệu: $error')),
-      );
     } finally {
       setState(() {
         isLoading = false;
@@ -86,7 +118,10 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
         title: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 50),
           child: Text('Danh sách phiếu điều chỉnh',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.titleColor)),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: AppColors.titleColor)),
         ),
       ),
       body: LayoutBuilder(
@@ -127,36 +162,122 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5.0, vertical: 5.0),
                       child: isLoading
                           ? const Center(child: CircularProgressIndicator())
                           : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minWidth: constraints.maxWidth,
-                          ),
-                          child: DataTable(
-                            columnSpacing: 16.0,
-                            columns: const <DataColumn>[
-                              DataColumn(label: Text('Mã điều chỉnh')),
-                              DataColumn(label: Text('Mã người thay đổi')),
-                              DataColumn(label: Text('Ngày')),
-                              DataColumn(label: Text('Số lượng tăng')),
-                              DataColumn(label: Text('Số lượng giảm')),
-                            ],
-                            rows: adjustments.map<DataRow>((adjustment) => DataRow(
-                              cells: <DataCell>[
-                                DataCell(Text(adjustment["id"] ?? 'N/A')),
-                                DataCell(Text(adjustment["sid"] ?? 'N/A')),
-                                DataCell(Text(adjustment["date"] ?? 'N/A')),
-                                DataCell(Text(adjustment["increasedQuantity"].toString())),
-                                DataCell(Text(adjustment["decreasedQuantity"].toString())),
-                              ],
-                            )).toList(),
-                          ),
-                        ),
-                      ),
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minWidth: constraints.maxWidth,
+                                ),
+                                child: DataTable(
+                                  columnSpacing: 16.0,
+                                  columns: const <DataColumn>[
+                                    DataColumn(label: Text('Mã điều chỉnh')),
+                                    DataColumn(
+                                        label: Text('Mã người thay đổi')),
+                                    DataColumn(label: Text('Ngày')),
+                                    DataColumn(label: Text('Số lượng tăng')),
+                                    DataColumn(label: Text('Số lượng giảm')),
+                                  ],
+                                  rows: adjustments
+                                      .map<DataRow>((adjustment) => DataRow(
+                                            cells: <DataCell>[
+                                              DataCell(
+                                                Text(adjustment["ganId"] ??
+                                                    'N/A'),
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          AdjustInvenDetail(
+                                                        ganData: adjustment,
+                                                        ganDetails: adjustment[
+                                                            "details"],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                              DataCell(
+                                                Text(
+                                                    adjustment["sId"] ?? 'N/A'),
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          AdjustInvenDetail(
+                                                        ganData: adjustment,
+                                                        ganDetails: adjustment[
+                                                            "details"],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                              DataCell(
+                                                Text(adjustment["date"] ??
+                                                    'N/A'),
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          AdjustInvenDetail(
+                                                        ganData: adjustment,
+                                                        ganDetails: adjustment[
+                                                            "details"],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                              DataCell(
+                                                Text(adjustment[
+                                                        "increasedQuantity"]
+                                                    .toString()),
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          AdjustInvenDetail(
+                                                        ganData: adjustment,
+                                                        ganDetails: adjustment[
+                                                            "details"],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                              DataCell(
+                                                Text(adjustment[
+                                                        "decreasedQuantity"]
+                                                    .toString()),
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          AdjustInvenDetail(
+                                                        ganData: adjustment,
+                                                        ganDetails: adjustment[
+                                                            "details"],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ],
+                                          ))
+                                      .toList(),
+                                ),
+                              ),
+                            ),
                     ),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -167,7 +288,8 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                         child: Container(
                           alignment: Alignment.center,
                           color: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 20),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -177,22 +299,22 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                                     icon: const Icon(Icons.first_page),
                                     onPressed: currentPage > 1
                                         ? () {
-                                      setState(() {
-                                        currentPage = 1;
-                                        _fetchAdjustments();
-                                      });
-                                    }
+                                            setState(() {
+                                              currentPage = 1;
+                                              _fetchAdjustments();
+                                            });
+                                          }
                                         : null,
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.chevron_left),
                                     onPressed: currentPage > 1
                                         ? () {
-                                      setState(() {
-                                        currentPage--;
-                                        _fetchAdjustments();
-                                      });
-                                    }
+                                            setState(() {
+                                              currentPage--;
+                                              _fetchAdjustments();
+                                            });
+                                          }
                                         : null,
                                   ),
                                   Text("Trang $currentPage/$totalPages"),
@@ -200,22 +322,22 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                                     icon: const Icon(Icons.chevron_right),
                                     onPressed: currentPage < totalPages
                                         ? () {
-                                      setState(() {
-                                        currentPage++;
-                                        _fetchAdjustments();
-                                      });
-                                    }
+                                            setState(() {
+                                              currentPage++;
+                                              _fetchAdjustments();
+                                            });
+                                          }
                                         : null,
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.last_page),
                                     onPressed: currentPage < totalPages
                                         ? () {
-                                      setState(() {
-                                        currentPage = totalPages;
-                                        _fetchAdjustments();
-                                      });
-                                    }
+                                            setState(() {
+                                              currentPage = totalPages;
+                                              _fetchAdjustments();
+                                            });
+                                          }
                                         : null,
                                   ),
                                 ],

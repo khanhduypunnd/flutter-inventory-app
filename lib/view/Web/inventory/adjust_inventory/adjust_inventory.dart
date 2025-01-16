@@ -44,7 +44,7 @@ class _AdjustInventoryState extends State<AdjustInventory> {
     });
 
     try {
-      final url = Uri.parse('http://localhost:9999/api/products');
+      final url = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/products');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -56,7 +56,7 @@ class _AdjustInventoryState extends State<AdjustInventory> {
           _searchResults = _allProducts;
         });
 
-        // print('API Response: ${response.body}');
+        print('API Response: ${response.body}');
       } else {
         throw Exception('Failed to fetch products: ${response.statusCode}');
       }
@@ -79,7 +79,7 @@ class _AdjustInventoryState extends State<AdjustInventory> {
       } else {
         _searchResults = _allProducts
             .where((product) =>
-                product.name.toLowerCase().contains(query.toLowerCase()))
+            product.name.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
     });
@@ -162,7 +162,7 @@ class _AdjustInventoryState extends State<AdjustInventory> {
 
   Future<int> loadCurrentId() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('currentId') ?? 1; // Mặc định bắt đầu từ 1
+    return prefs.getInt('currentId') ?? 1;
   }
 
   Future<void> _sendGan(List<GANDetail> details) async {
@@ -192,11 +192,11 @@ class _AdjustInventoryState extends State<AdjustInventory> {
 
     try {
       final response =
-          await http.post(Uri.parse('http://localhost:9999/api/grn'),
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: jsonEncode(ganData));
+      await http.post(Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/grn'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(ganData));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (kDebugMode) {
@@ -224,7 +224,7 @@ class _AdjustInventoryState extends State<AdjustInventory> {
     for (var detail in details) {
       try {
 
-        final urlGet = Uri.parse('http://localhost:9999/api/products/${detail.productId}');
+        final urlGet = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/products/${detail.productId}');
         final responseGet = await http.get(urlGet);
 
         if (responseGet.statusCode == 200) {
@@ -233,12 +233,14 @@ class _AdjustInventoryState extends State<AdjustInventory> {
           final sizeIndex = productData['sizes'].indexOf(detail.size[0]);
           if (sizeIndex == -1) {
             print('Size ${detail.size[0]} not found for product ${detail.productId}');
-            continue;
+            // continue;
           }
 
           productData['quantities'][sizeIndex] = detail.newQuantity;
 
-          final urlPut = Uri.parse('http://localhost:9999/api/products/${detail.productId}');
+          print(productData);
+
+          final urlPut = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/products/${detail.productId}');
           final responsePut = await http.put(
             urlPut,
             headers: {
@@ -410,14 +412,14 @@ class _AdjustInventoryState extends State<AdjustInventory> {
                                   itemBuilder: (context, sizeIndex) {
                                     final size = product.sizes[sizeIndex];
                                     final actualQuantity = int.tryParse(product
-                                            .quantities[sizeIndex]
-                                            .toString()) ??
+                                        .quantities[sizeIndex]
+                                        .toString()) ??
                                         0;
                                     int adjustedQuantity = int.tryParse(
-                                            _quantityControllers[index]
-                                                        ?[sizeIndex]
-                                                    ?.text ??
-                                                '0') ??
+                                        _quantityControllers[index]
+                                        ?[sizeIndex]
+                                            ?.text ??
+                                            '0') ??
                                         0;
                                     return Row(
                                       children: [
@@ -444,7 +446,7 @@ class _AdjustInventoryState extends State<AdjustInventory> {
                                           width: 50,
                                           child: TextFormField(
                                             controller: _quantityControllers[
-                                                product.id]![size],
+                                            product.id]![size],
                                             keyboardType: TextInputType.number,
                                             decoration: const InputDecoration(
                                               border: OutlineInputBorder(),

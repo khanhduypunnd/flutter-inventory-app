@@ -23,16 +23,17 @@ class AdjustListDetail extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(5),
+                borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey,
-                    blurRadius: 1,
+                    blurRadius: 5,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 child: DataTable(
                   columns: const [
                     DataColumn(label: Text('Tên sản phẩm')),
@@ -73,14 +74,19 @@ class AdjustListDetail extends StatelessWidget {
                   TextField(
                     decoration: InputDecoration(
                       labelText: 'Ghi chú',
+                      labelStyle: const TextStyle(color: Colors.blueAccent),
                       border: const OutlineInputBorder(),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                            color: Colors.blueAccent, width: 2),
+                        borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
-                    maxLines: 3,
+                    maxLines: 5,
+                    enabled: false,
                   ),
                 ],
               ),
