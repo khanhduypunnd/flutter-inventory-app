@@ -30,11 +30,11 @@ class _ListProductState extends State<ListProduct> {
     });
 
     try {
-      final url = Uri.parse('http://localhost:9999/api/products');
+      final url = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/products');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        print('API Response: ${response.body}');
+        // print('API Response: ${response.body}');
         final List<dynamic> jsonData = json.decode(response.body);
 
         setState(() {

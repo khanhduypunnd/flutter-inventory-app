@@ -3,7 +3,7 @@ class GAN {
   final String staffId;
   final DateTime date;
   final int increasedQuantity;
-  final int descreaedQuantity;
+  final int decreasedQuantity;
   final String note;
 
   GAN({
@@ -11,7 +11,7 @@ class GAN {
     required this.staffId,
     required this.date,
     required this.increasedQuantity,
-    required this.descreaedQuantity,
+    required this.decreasedQuantity,
     required this.note,
   });
 
@@ -19,9 +19,9 @@ class GAN {
     return GAN(
       ganId: data['ganId'] ?? '',
       staffId: data['sId'] ?? '',
-      date: (data['date']).toDate(),
+      date: DateTime.fromMillisecondsSinceEpoch(data['date']['_seconds'] * 1000),
       increasedQuantity: data['increasedQuantity'] ?? 0,
-      descreaedQuantity: data['iecreasedQuantity'] ?? 0,
+      decreasedQuantity: data['decreasedQuantity'] ?? 0,
       note: data['note'] ?? '',
     );
   }
@@ -47,10 +47,9 @@ class GANDetail {
     return GANDetail(
       ganId: data['ganId'] ?? '',
       productId: data['pid'] ?? '',
-      size: data['sizes'] ?? '',
+      size: data['size'] ?? '',
       oldQuantity: data['oldQuantity'] ?? 0,
       newQuantity: data['newQuantity'] ?? 0,
     );
   }
-
 }

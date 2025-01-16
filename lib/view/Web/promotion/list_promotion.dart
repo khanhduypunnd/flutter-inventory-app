@@ -34,7 +34,7 @@ class _ListPromotionState extends State<ListPromotion> {
     });
 
     try {
-      final url = Uri.parse('http://localhost:9999/api/giftCodes');
+      final url = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/giftCodes');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -118,7 +118,7 @@ class _ListPromotionState extends State<ListPromotion> {
           .toList();
 
       for (String id in selectedIds) {
-        final url = Uri.parse('http://localhost:9999/api/giftCodes/$id');
+        final url = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/giftCodes/$id');
         final response = await http.delete(url);
 
         if (response.statusCode != 200) {

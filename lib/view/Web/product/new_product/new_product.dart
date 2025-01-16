@@ -182,7 +182,7 @@ class _NewProductState extends State<NewProduct> {
   Future<void> _sendProductData(Map<String, dynamic> productData) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:9999/api/products'),
+        Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/products'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(productData),
       );

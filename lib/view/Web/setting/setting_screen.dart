@@ -5,13 +5,8 @@ import 'employee/employee_management.dart';
 import 'payment/payment.dart';
 import 'role/role.dart';
 
-
-void main() {
-  runApp(const setting());
-}
-
-class setting extends StatelessWidget {
-  const setting({super.key});
+class SettingScreenetting extends StatelessWidget {
+  const SettingScreenetting({super.key});
 
   @override
   Widget build(BuildContext context) {

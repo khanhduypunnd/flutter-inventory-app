@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../icon_pictures.dart';
@@ -129,7 +130,7 @@ class _PromotionScreenState extends State<NewPromotion> {
 
       print('Dữ liệu JSON: ${json.encode(promotionData)}');
 
-      final url = Uri.parse('http://localhost:9999/api/giftCodes');
+      final url = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/giftCodes');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -137,23 +138,19 @@ class _PromotionScreenState extends State<NewPromotion> {
       );
 
       if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tạo khuyến mãi thành công!')),
-        );
+        showCustomToast(context, 'Tạo khuyến mãi thành công!');
         _clearForm();
       } else {
         final errorMessage = response.body.isNotEmpty
             ? json.decode(response.body)['message']
             : 'Lỗi không xác định';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $errorMessage')),
-        );
+        showCustomToast(context, 'Lỗi: $errorMessage');
       }
     } catch (e) {
-      print('Lỗi khi gửi dữ liệu: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Có lỗi xảy ra: $e')),
-      );
+      if (kDebugMode) {
+        print('Lỗi khi gửi dữ liệu: $e');
+      }
+      showCustomToast(context, 'Có lỗi xảy ra: $e');
     }
   }
 
