@@ -1,4 +1,6 @@
+import 'package:dacntt1_mobile_admin/view_model/order.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:math';
 import '../../../shared/core/theme/colors_app.dart';
 
@@ -8,59 +10,33 @@ class ListOrder extends StatefulWidget {
 }
 
 class _ListOrderState extends State<ListOrder> {
-  int rowsPerPage = 20;
-  int currentPage = 1;
-  int totalOrders = 50;
-  List<Map<String, dynamic>> orders = [];
-  bool isLoading = false;
-
   @override
   void initState() {
     super.initState();
-    _fetchOrders();
-  }
-
-  Future<void> _fetchOrders() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    await Future.delayed(const Duration(seconds: 1));
-
-    final random = Random();
-    int startIndex = (currentPage - 1) * rowsPerPage;
-
-    orders = List.generate(
-      rowsPerPage,
-          (index) => {
-        "orderCode": "#1109${startIndex + index}",
-        "date": getRandomDate(),
-        "customer": "Khách hàng ${startIndex + index}",
-        "paymentStatus": random.nextBool() ? "Đã thanh toán" : "Chưa thanh toán",
-        "deliveryStatus": random.nextBool() ? "Đã giao" : "Chưa giao",
-        "totalAmount": "${random.nextInt(5000000)} đ",
-        "channel": "POS",
-      },
-    );
-
-    setState(() {
-      isLoading = false;
+    Future.microtask(() {
+      Provider.of<ListOrderModel>(context, listen: false).fetchOrders();
+      Provider.of<ListOrderModel>(context, listen: false).fetchCustomers();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    int totalPages = (totalOrders / rowsPerPage).ceil();
+    final ordersmodel = Provider.of<ListOrderModel>(context);
+    int totalPages = (ordersmodel.totalOrders / ordersmodel.rowsPerPage).ceil();
     const int maxPagesToShow = 5;
 
-    int startPage = (currentPage - maxPagesToShow ~/ 2) > 0
-        ? (currentPage - maxPagesToShow ~/ 2)
-        : 1;
+    int startPage = ordersmodel.currentPage - (maxPagesToShow ~/ 2);
+    int endPage = ordersmodel.currentPage + (maxPagesToShow ~/ 2);
 
-    int endPage = startPage + maxPagesToShow - 1;
+    if (startPage < 1) {
+      startPage = 1;
+      endPage = maxPagesToShow;
+    }
+
     if (endPage > totalPages) {
       endPage = totalPages;
       startPage = totalPages - maxPagesToShow + 1;
+      if (startPage < 1) startPage = 1;
     }
 
     return Scaffold(
@@ -71,7 +47,8 @@ class _ListOrderState extends State<ListOrder> {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 50),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(color: Colors.grey, width: 1),
@@ -101,84 +78,97 @@ class _ListOrderState extends State<ListOrder> {
                         ],
                       ),
                     ),
-
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
-                      child: isLoading
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5.0, vertical: 5.0),
+                      child: ordersmodel.isLoading
                           ? const Center(child: CircularProgressIndicator())
                           : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minWidth: constraints.maxWidth,
-                          ),
-                          child: DataTable(
-                            columnSpacing: 16.0,
-                            columns: const <DataColumn>[
-                              DataColumn(label: Text('Mã')),
-                              DataColumn(label: Text('Ngày tạo')),
-                              DataColumn(label: Text('Khách hàng')),
-                              DataColumn(label: Text('Thanh toán')),
-                              DataColumn(label: Text('Tổng tiền')),
-                              DataColumn(label: Text('Kênh')),
-                            ],
-                            rows: orders.map<DataRow>((order) => DataRow(
-                              cells: <DataCell>[
-                                DataCell(Text(order["orderCode"])),
-                                DataCell(Text(order["date"])),
-                                DataCell(Text(order["customer"])),
-                                DataCell(
-                                  Text(
-                                    order["paymentStatus"],
-                                    style: TextStyle(
-                                      color: order["paymentStatus"] == "Đã thanh toán"
-                                          ? Colors.green
-                                          : Colors.red,
-                                    ),
-                                  ),
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minWidth: constraints.maxWidth,
                                 ),
-                                DataCell(Text(order["totalAmount"])),
-                                DataCell(Text(order["channel"])),
-                              ],
-                            )).toList(),
-                          ),
-                        ),
-                      ),
+                                child: DataTable(
+                                  columnSpacing: 16.0,
+                                  columns: const <DataColumn>[
+                                    DataColumn(label: Text('Mã')),
+                                    DataColumn(label: Text('Ngày tạo')),
+                                    DataColumn(label: Text('Khách hàng')),
+                                    DataColumn(label: Text('Thanh toán')),
+                                    DataColumn(label: Text('Tổng tiền')),
+                                    DataColumn(label: Text('Kênh')),
+                                  ],
+                                  rows: ordersmodel.orders
+                                      .map<DataRow>((order) => DataRow(
+                                            cells: <DataCell>[
+                                              DataCell(Text(order.id)),
+                                              DataCell(
+                                                  Text(order.date.toString())),
+                                              DataCell(Text(ordersmodel.getCustomerName(order.cid))),
+                                              DataCell(Text(
+                                                ordersmodel.getStatusText(
+                                                    order.status),
+                                                style: TextStyle(
+                                                    color: ordersmodel
+                                                        .getStatusColor(
+                                                            order.status),
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              )),
+                                              DataCell(Text(
+                                                  order.totalPrice.toString())),
+                                              DataCell(Text(order.channel)),
+                                            ],
+                                          ))
+                                      .toList(),
+                                ),
+                              ),
+                            ),
                     ),
-
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Container(
                         color: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 20),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             PopupMenuButton<int>(
                               onSelected: (value) {
                                 setState(() {
-                                  rowsPerPage = value;
-                                  _fetchOrders();
+                                  ordersmodel.rowsPerPage = value;
+                                  ordersmodel.fetchOrders();
                                 });
                               },
                               itemBuilder: (BuildContext context) {
                                 return [
                                   PopupMenuItem<int>(
                                     value: 10,
-                                    child: Text("Hiển thị 10", style: TextStyle(color: Colors.blueAccent),),
+                                    child: Text(
+                                      "Hiển thị 10",
+                                      style:
+                                          TextStyle(color: Colors.blueAccent),
+                                    ),
                                   ),
                                   PopupMenuItem<int>(
                                     value: 20,
-                                    child: Text("Hiển thị 20", style: TextStyle(color: Colors.blueAccent)),
+                                    child: Text("Hiển thị 20",
+                                        style: TextStyle(
+                                            color: Colors.blueAccent)),
                                   ),
                                   PopupMenuItem<int>(
                                     value: 50,
-                                    child: Text("Hiển thị 50", style: TextStyle(color: Colors.blueAccent)),
+                                    child: Text("Hiển thị 50",
+                                        style: TextStyle(
+                                            color: Colors.blueAccent)),
                                   ),
                                 ];
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   border: Border.all(color: Colors.grey),
@@ -186,58 +176,59 @@ class _ListOrderState extends State<ListOrder> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Text("Hiển thị $rowsPerPage",
+                                    Text("Hiển thị ${ordersmodel.rowsPerPage}",
                                         style: const TextStyle(fontSize: 16)),
                                     const Icon(Icons.arrow_drop_down),
                                   ],
                                 ),
                               ),
                             ),
-
                             Row(
                               children: [
                                 IconButton(
                                   icon: const Icon(Icons.first_page),
-                                  onPressed: currentPage > 1
+                                  onPressed: ordersmodel.currentPage > 1
                                       ? () {
-                                    setState(() {
-                                      currentPage = 1;
-                                      _fetchOrders();
-                                    });
-                                  }
+                                          setState(() {
+                                            ordersmodel.currentPage = 1;
+                                            ordersmodel.fetchOrders();
+                                          });
+                                        }
                                       : null,
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.chevron_left),
-                                  onPressed: currentPage > 1
+                                  onPressed: ordersmodel.currentPage > 1
                                       ? () {
-                                    setState(() {
-                                      currentPage--;
-                                      _fetchOrders();
-                                    });
-                                  }
+                                          setState(() {
+                                            ordersmodel.currentPage--;
+                                            ordersmodel.fetchOrders();
+                                          });
+                                        }
                                       : null,
                                 ),
                                 Row(
-                                  children:
-                                  List.generate(endPage - startPage + 1, (index) {
+                                  children: List.generate(
+                                      endPage - startPage + 1, (index) {
                                     int pageIndex = startPage + index;
                                     return Padding(
-                                      padding:
-                                      const EdgeInsets.symmetric(horizontal: 4.0),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 4.0),
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: pageIndex == currentPage
+                                          backgroundColor: pageIndex ==
+                                                  ordersmodel.currentPage
                                               ? Colors.blue
                                               : Colors.grey[300],
-                                          foregroundColor: pageIndex == currentPage
+                                          foregroundColor: pageIndex ==
+                                                  ordersmodel.currentPage
                                               ? Colors.white
                                               : Colors.black,
                                         ),
                                         onPressed: () {
                                           setState(() {
-                                            currentPage = pageIndex;
-                                            _fetchOrders();
+                                            ordersmodel.currentPage = pageIndex;
+                                            ordersmodel.fetchOrders();
                                           });
                                         },
                                         child: Text('$pageIndex'),
@@ -247,25 +238,28 @@ class _ListOrderState extends State<ListOrder> {
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.chevron_right),
-                                  onPressed: currentPage < totalPages
-                                      ? () {
-                                    setState(() {
-                                      currentPage++;
-                                      _fetchOrders();
-                                    });
-                                  }
-                                      : null,
+                                  onPressed:
+                                      ordersmodel.currentPage < totalPages
+                                          ? () {
+                                              setState(() {
+                                                ordersmodel.currentPage++;
+                                                ordersmodel.fetchOrders();
+                                              });
+                                            }
+                                          : null,
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.last_page),
-                                  onPressed: currentPage < totalPages
-                                      ? () {
-                                    setState(() {
-                                      currentPage = totalPages;
-                                      _fetchOrders();
-                                    });
-                                  }
-                                      : null,
+                                  onPressed:
+                                      ordersmodel.currentPage < totalPages
+                                          ? () {
+                                              setState(() {
+                                                ordersmodel.currentPage =
+                                                    totalPages;
+                                                ordersmodel.fetchOrders();
+                                              });
+                                            }
+                                          : null,
                                 ),
                               ],
                             ),
@@ -281,13 +275,5 @@ class _ListOrderState extends State<ListOrder> {
         },
       ),
     );
-  }
-
-  String getRandomDate() {
-    final random = Random();
-    int day = 1 + random.nextInt(28);
-    int month = 1 + random.nextInt(12);
-    int year = 2020 + random.nextInt(6);
-    return "${day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/$year";
   }
 }
