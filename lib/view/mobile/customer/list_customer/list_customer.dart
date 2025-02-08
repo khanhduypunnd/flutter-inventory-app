@@ -138,6 +138,7 @@ class _CustomerListState extends State<CustomerList> {
 
                               final selectedCustomer = Customer(
                                 id: customer["id"],
+                                cid: customer["cid"],
                                 name: customer["name"],
                                 dob: customer["dob"],
                                 address: customer["address"],

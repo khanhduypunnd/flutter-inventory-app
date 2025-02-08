@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import '../../../../data/customer.dart';
 import '../../../../shared/core/theme/colors_app.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class CustomerList extends StatefulWidget {
   @override
@@ -11,39 +14,68 @@ class _CustomerListState extends State<CustomerList> {
   late int rowsPerPage = 20;
   int currentPage = 1;
   int totalCustomers = 682;
-  List<Map<String, dynamic>> customers = [];
+  List<Customer> customers = [];
   bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchCustomers();
+    fetchCustomers();
   }
 
-  Future<void> _fetchCustomers() async {
+  // Future<void> _fetchCustomers() async {
+  //   setState(() {
+  //     isLoading = true;
+  //   });
+  //
+  //   await Future.delayed(const Duration(seconds: 1));
+  //
+  //   int startIndex = (currentPage - 1) * rowsPerPage;
+  //
+  //   List<Map<String, dynamic>> newCustomers = List.generate(
+  //     rowsPerPage,
+  //         (index) => {
+  //       "name": "Khách hàng ${startIndex + index + 1}",
+  //       "phone": "098${Random().nextInt(10000000).toString().padLeft(7, '0')}",
+  //       "lastOrder": getRandomDate(),
+  //       "orderCount": Random().nextInt(100),
+  //       "totalSpend": "${Random().nextInt(1000000)} đ",
+  //     },
+  //   );
+  //
+  //   setState(() {
+  //     customers = newCustomers;
+  //     isLoading = false;
+  //   });
+  // }
+
+  Future<void> fetchCustomers() async {
+    if (customers.isNotEmpty) return;
     setState(() {
       isLoading = true;
     });
 
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final url = Uri.parse(
+          'https://dacntt1-api-server-4rtx90o6z-haonguyen9191s-projects.vercel.app/api/customers');
+      final response = await http.get(url);
 
-    int startIndex = (currentPage - 1) * rowsPerPage;
-
-    List<Map<String, dynamic>> newCustomers = List.generate(
-      rowsPerPage,
-          (index) => {
-        "name": "Khách hàng ${startIndex + index + 1}",
-        "phone": "098${Random().nextInt(10000000).toString().padLeft(7, '0')}",
-        "lastOrder": getRandomDate(),
-        "orderCount": Random().nextInt(100),
-        "totalSpend": "${Random().nextInt(1000000)} đ",
-      },
-    );
-
-    setState(() {
-      customers = newCustomers;
-      isLoading = false;
-    });
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        final customer =
+        jsonData.map((data) => Customer.fromJson(data)).toList();
+        customers.clear();
+        customers.addAll(customer);
+      } else {
+        throw Exception('Failed to fetch customers: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error fetching customers: $error');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -116,23 +148,15 @@ class _CustomerListState extends State<CustomerList> {
                             label: Text('Điện thoại', style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
                           DataColumn(
-                            label: Text('Đơn gần nhất', style: TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                          DataColumn(
-                            label: Text('Số lượng đơn hàng', style: TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                          DataColumn(
-                            label: Text('Tổng chi tiêu', style: TextStyle(fontWeight: FontWeight.bold)),
+                            label: Text('Email', style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
                         ],
                         rows: customers.map<DataRow>((customer) {
                           return DataRow(
                             cells: <DataCell>[
-                              DataCell(Text(customer["name"], style: const TextStyle(color: Colors.blueAccent),)),
-                              DataCell(Text(customer["phone"], style: const TextStyle(color: Colors.blueAccent))),
-                              DataCell(Text(customer["lastOrder"], style: const TextStyle(color: Colors.blueAccent))),
-                              DataCell(Text(customer["orderCount"].toString())),
-                              DataCell(Text(customer["totalSpend"])),
+                              DataCell(Text(customer.name, style: const TextStyle(color: Colors.blueAccent),)),
+                              DataCell(Text(customer.phone, style: const TextStyle(color: Colors.blueAccent))),
+                              DataCell(Text(customer.email, style: const TextStyle(color: Colors.blueAccent))),
                             ],
                           );
                         }).toList(),
@@ -149,7 +173,7 @@ class _CustomerListState extends State<CustomerList> {
                       onSelected: (value) {
                         setState(() {
                           rowsPerPage = value;
-                          _fetchCustomers();
+                          fetchCustomers();
                         });
                       },
                       itemBuilder: (BuildContext context) {
@@ -192,7 +216,7 @@ class _CustomerListState extends State<CustomerList> {
                               ? () {
                             setState(() {
                               currentPage = 1;
-                              _fetchCustomers();
+                              fetchCustomers();
                             });
                           }
                               : null,
@@ -203,7 +227,7 @@ class _CustomerListState extends State<CustomerList> {
                               ? () {
                             setState(() {
                               currentPage--;
-                              _fetchCustomers();
+                              fetchCustomers();
                             });
                           }
                               : null,
@@ -215,7 +239,7 @@ class _CustomerListState extends State<CustomerList> {
                               ? () {
                             setState(() {
                               currentPage++;
-                              _fetchCustomers();
+                              fetchCustomers();
                             });
                           }
                               : null,
@@ -226,7 +250,7 @@ class _CustomerListState extends State<CustomerList> {
                               ? () {
                             setState(() {
                               currentPage = totalPages;
-                              _fetchCustomers();
+                              fetchCustomers();
                             });
                           }
                               : null,

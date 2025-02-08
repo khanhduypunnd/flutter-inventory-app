@@ -6,7 +6,7 @@ import '../../../../shared/core/theme/colors_app.dart';
 import '../../../../data/customer.dart';
 
 class CustomerInfoWidget extends StatefulWidget {
-  final Customer customer; // Nhận một đối tượng Customer
+  final Customer customer;
   final List<Map<String, String>> orderList;
 
   const CustomerInfoWidget({
@@ -43,8 +43,8 @@ class _CustomerInfoWidgetState extends State<CustomerInfoWidget> {
               width: MediaQuery.of(context).size.width,
               child: CustomerInfoHeader(
                 customerName: widget.customer.name,
-                cumulativeRevenue: 20000.00, // Cộng doanh thu mẫu
-                totalOrders: 10, // Số lượng đơn mẫu
+                cumulativeRevenue: 20000.00,
+                totalOrders: 10,
               ),
             ),
             const SizedBox(height: 16),
@@ -55,7 +55,7 @@ class _CustomerInfoWidgetState extends State<CustomerInfoWidget> {
               child: CustomerContactInfo(
                 phoneNumber: widget.customer.phone,
                 email: widget.customer.email,
-                birthDate: widget.customer.dob,
+                birthDate: widget.customer.dob.toString(),
                 address: widget.customer.address,
               ),
             ),
