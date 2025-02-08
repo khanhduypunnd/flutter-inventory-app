@@ -248,7 +248,6 @@ class _NewProductState extends State<NewProduct> {
 
               const SizedBox(height: 20),
 
-              // Thông tin chung
               GeneralInfo(
                 nameController: nameController,
                 supplierController: supplierController,

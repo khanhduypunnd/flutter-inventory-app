@@ -75,18 +75,18 @@ class ResponsiveLayout extends StatelessWidget {
                         children: [
                           buildMenuItem(menuItems[0], context),
                           const SizedBox(height: 16),
-                          buildMenuItem(menuItems[2], context),
-                        ],
-                      ),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
                           buildMenuItem(menuItems[1], context),
-                          const SizedBox(height: 16),
-                          buildMenuItem(menuItems[3], context),
                         ],
                       ),
+                      // const SizedBox(width: 16),
+                      // Column(
+                      //   crossAxisAlignment: CrossAxisAlignment.start,
+                      //   children: [
+                      //     buildMenuItem(menuItems[1], context),
+                      //     const SizedBox(height: 16),
+                      //     buildMenuItem(menuItems[3], context),
+                      //   ],
+                      // ),
                     ],
                   ),
                 ),
@@ -150,18 +150,6 @@ class ResponsiveLayout extends StatelessWidget {
           MaterialPageRoute(builder: (context) => EmployeeManagement()),
         );
         break;
-      case 'Vai trò':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => RoleList()),
-        );
-        break;
-      case 'Phương thức thanh toán':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Payment()),
-        );
-        break;
       case 'Tài khoản':
         Navigator.push(
           context,
@@ -189,14 +177,14 @@ final List<MenuItem> menuItems = [
       title: 'Nhân viên',
       suptitle: 'Tạo, phân quyền và quản lý nhân viên',
       icon: Icons.people_alt_outlined),
-  MenuItem(
-      title: 'Vai trò',
-      suptitle: 'Tạo, phân quyền và quản lý vai trò',
-      icon: Icons.accessibility_new),
-  MenuItem(
-      title: 'Phương thức thanh toán',
-      suptitle: 'Quản lý, cấu hình phương thức thanh toán',
-      icon: Icons.payment_outlined),
+  // MenuItem(
+  //     title: 'Vai trò',
+  //     suptitle: 'Tạo, phân quyền và quản lý vai trò',
+  //     icon: Icons.accessibility_new),
+  // MenuItem(
+  //     title: 'Phương thức thanh toán',
+  //     suptitle: 'Quản lý, cấu hình phương thức thanh toán',
+  //     icon: Icons.payment_outlined),
   MenuItem(
       title: 'Tài khoản',
       suptitle: 'Cấu hình tài khoản',

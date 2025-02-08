@@ -3,13 +3,6 @@ import 'analysis/business_analysis.dart';
 import 'analysis/inventory_analysis.dart';
 import '../../../shared/core/theme/colors_app.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    home: Analysis(),
-  ));
-}
-
-
 class Analysis extends StatelessWidget {
   const Analysis({super.key});
 
@@ -24,7 +17,6 @@ class Analysis extends StatelessWidget {
           bottom: const TabBar(
             isScrollable: true,
             tabs: [
-              Tab(text: 'Tổng quan'),
               Tab(text: 'Phân tích kinh doanh'),
               Tab(text: 'Quản lý tồn kho'),
             ],
@@ -32,7 +24,6 @@ class Analysis extends StatelessWidget {
         ),
         body: const TabBarView(
           children: [
-            Center(child: Text('Nội dung Tổng quan')),
             Center(child: BusinessAnalysis()),
             Center(child: InventoryAnalysis()),
           ],

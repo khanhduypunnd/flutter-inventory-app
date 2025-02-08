@@ -16,10 +16,8 @@ class NewPromotion extends StatefulWidget {
 class _PromotionScreenState extends State<NewPromotion> {
   final _promotionCodeController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final TextEditingController _promotion_condition = TextEditingController();
   final TextEditingController _valueController = TextEditingController();
   final TextEditingController _valuelimitController = TextEditingController();
-  final TextEditingController _quantitylimid = TextEditingController();
   DateTime? _startDate = DateTime.now();
   DateTime? _endDate = DateTime.now();
   bool _hasEndDate = false;
@@ -124,13 +122,15 @@ class _PromotionScreenState extends State<NewPromotion> {
         'value_limit': _haslimit_promotion
             ? double.tryParse(_valuelimitController.text.trim()) ?? 0.0
             : 0.0,
-        'beginning': _startDate!.toIso8601String(),
-        'expiration': _endDate?.toIso8601String(),
+        'beginning': _startDate!.toUtc().toIso8601String(),
+        'expiration': _endDate?.toUtc().toIso8601String(),
       };
 
-      print('Dữ liệu JSON: ${json.encode(promotionData)}');
+      if (kDebugMode) {
+        print('Dữ liệu JSON: ${json.encode(promotionData)}');
+      }
 
-      final url = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/giftCodes');
+      final url = Uri.parse('https://dacntt1-api-server-4rtx90o6z-haonguyen9191s-projects.vercel.app/api/giftCodes');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -195,7 +195,6 @@ class _PromotionScreenState extends State<NewPromotion> {
 
     overlay.insert(overlayEntry);
 
-    // Remove the toast after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       overlayEntry.remove();
     });
@@ -365,78 +364,6 @@ class _PromotionScreenState extends State<NewPromotion> {
               ),
             ),
             const SizedBox(height: 20),
-            // Container(
-            //   margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-            //   decoration: BoxDecoration(
-            //     color: Colors.white,
-            //     border: Border.all(color: Colors.grey, width: 1),
-            //     borderRadius: BorderRadius.circular(8),
-            //     boxShadow: [
-            //       BoxShadow(
-            //         color: Colors.black.withOpacity(0.1),
-            //         blurRadius: 10,
-            //       ),
-            //     ],
-            //   ),
-            //   child: Container(
-            //     padding:
-            //         const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
-            //     child: Column(
-            //       children: [
-            //         DropdownButtonFormField<String>(
-            //           isExpanded: true,
-            //           value: _selectedType,
-            //           dropdownColor: Colors.white,
-            //           hint: const Text('Chọn loại khuyến mãi'),
-            //           decoration: InputDecoration(
-            //             contentPadding: const EdgeInsets.symmetric(
-            //                 vertical: 15, horizontal: 10),
-            //             border: OutlineInputBorder(
-            //               borderRadius: BorderRadius.circular(10.0),
-            //             ),
-            //             focusedBorder: OutlineInputBorder(
-            //               borderSide: const BorderSide(
-            //                   color: Colors.blueAccent, width: 2),
-            //               borderRadius: BorderRadius.circular(10.0),
-            //             ),
-            //           ),
-            //           items: [
-            //             DropdownMenuItem<String>(
-            //               value: 'Giảm giá tiền',
-            //               child: Row(
-            //                 children: [
-            //                   Image.asset(icon_pictures_promotion.ic_bill),
-            //                   const SizedBox(width: 10),
-            //                   const Text('Giảm giá tiền'),
-            //                 ],
-            //               ),
-            //             ),
-            //             DropdownMenuItem<String>(
-            //               value: 'Giảm giá theo phần trăm',
-            //               child: Row(
-            //                 children: [
-            //                   Image.asset(icon_pictures_promotion.ic_percent),
-            //                   const SizedBox(width: 10),
-            //                   const Text('Giảm giá theo phần trăm'),
-            //                 ],
-            //               ),
-            //             ),
-            //           ],
-            //           onChanged: (String? newValue) {
-            //             setState(() {
-            //               _selectedType = newValue;
-            //             });
-            //           },
-            //         )
-            //       ],
-            //     ),
-            //   ),
-            // ),
-            // const SizedBox(
-            //   height: 20,
-            // ),
-            // if (_selectedType == 'Giảm giá tiền') _build_promotion_cash(),
-            // if (_selectedType == 'Giảm giá theo phần trăm')
               _build_promotion_bill_percern(),
           ],
         ),

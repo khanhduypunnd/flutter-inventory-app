@@ -39,29 +39,6 @@ class InfoCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            // Row(
-            //   children: [
-            //     if (percentage != '--') ...[
-            //       double.parse(percentage) < 0.0
-            //           ? Icon(Icons.arrow_drop_down, color: Colors.red)
-            //           : Icon(Icons.arrow_drop_up, color: Colors.green),
-            //       SizedBox(width: 5),
-            //       Text(
-            //         '${double.parse(percentage).toStringAsFixed(2)}%',
-            //         style: TextStyle(
-            //           color: double.parse(percentage) < 0.0 ? Colors.red : Colors.green,
-            //           fontSize: 14,
-            //         ),
-            //       ),
-            //     ] else
-            //       Text(
-            //         '--',
-            //         style: TextStyle(color: Colors.grey, fontSize: 14),
-            //       ),
-            //   ],
-            // )
-
-
           ],
         ),
       ),

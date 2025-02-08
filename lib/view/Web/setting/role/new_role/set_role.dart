@@ -1,55 +1,34 @@
 import 'package:flutter/material.dart';
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key); // Thêm `const` ở đây
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp( // Giờ bạn có thể dùng `const` an toàn
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: PermissionSetting(),
-      ),
-    );
-  }
-}
-
+import 'package:provider/provider.dart';
+import '../../../../../view_model/new_employee.dart';
 
 class PermissionSetting extends StatefulWidget {
   const PermissionSetting({Key? key}) : super(key: key);
+
   @override
   State<PermissionSetting> createState() => _PermissionPageState();
 }
 
 class _PermissionPageState extends State<PermissionSetting> {
-  List<Permission> permissions = [];
-
-  @override
-  void initState() {
-    super.initState();
-    permissions = [
-      Permission(title: 'Quản lý đơn hàng', groupValue: 1, onChange: (value) => _handleRadioValueChange(0, value)),
-      Permission(title: 'Quản lý sản phẩm', groupValue: 1, onChange: (value) => _handleRadioValueChange(1, value)),
-      Permission(title: 'Thêm sản phẩm', groupValue: 1, onChange: (value) => _handleRadioValueChange(2, value)),
-      Permission(title: 'Quản lý khách hàng', groupValue: 1, onChange: (value) => _handleRadioValueChange(3, value)),
-      Permission(title: 'Quản lý tồn kho', groupValue: 1, onChange: (value) => _handleRadioValueChange(4, value)),
-      Permission(title: 'Điều chỉnh kho', groupValue: 1, onChange: (value) => _handleRadioValueChange(5, value)),
-      Permission(title: 'Lịch sử điều chỉnh', groupValue: 1, onChange: (value) => _handleRadioValueChange(6, value)),
-      Permission(title: 'Quản lý khuyến mãi', groupValue: 1, onChange: (value) => _handleRadioValueChange(7, value)),
-      Permission(title: 'Tạo khuyến mãi', groupValue: 1, onChange: (value) => _handleRadioValueChange(8, value)),
-      Permission(title: 'Báo cáo', groupValue: 1, onChange: (value) => _handleRadioValueChange(9, value)),
-      Permission(title: 'Cấu hình', groupValue: 1, onChange: (value) => _handleRadioValueChange(10, value)),
-    ];
-  }
-
-  void _handleRadioValueChange(int index, int? value) {
-    setState(() {
-      permissions[index].groupValue = value ?? 0;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final newEmployee = Provider.of<NewEmployee>(context);
+
+    List<String> permissionTitles = [
+      'Bán hàng',
+      'Quản lý đơn hàng',
+      'Quản lý sản phẩm',
+      'Thêm sản phẩm',
+      'Quản lý khách hàng',
+      'Quản lý tồn kho',
+      'Điều chỉnh kho',
+      'Lịch sử điều chỉnh',
+      'Quản lý khuyến mãi',
+      'Tạo khuyến mãi',
+      'Báo cáo',
+      'Cấu hình'
+    ];
+
     return SingleChildScrollView(
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -66,74 +45,60 @@ class _PermissionPageState extends State<PermissionSetting> {
           ],
         ),
         child: Column(
-          children: permissions.map((permission) => buildPermissionCard(permission)).toList(),
+          children: List.generate(permissionTitles.length, (index) {
+            return Card(
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 15.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(permissionTitles[index],
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: RadioListTile<int>(
+                            activeColor: Colors.blueAccent,
+                            title: const Text('Đọc và Ghi'),
+                            value: 0,
+                            groupValue: newEmployee.rolePermissions[index],
+                            onChanged: (int? value) {
+                              newEmployee.updateRolePermission(index, value!);
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          child: RadioListTile<int>(
+                            activeColor: Colors.blueAccent,
+                            title: const Text('Chỉ Đọc'),
+                            value: 1,
+                            groupValue: newEmployee.rolePermissions[index],
+                            onChanged: (int? value) {
+                              newEmployee.updateRolePermission(index, value!);
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          child: RadioListTile<int>(
+                            activeColor: Colors.blueAccent,
+                            title: const Text('Không Có Quyền'),
+                            value: 2,
+                            groupValue: newEmployee.rolePermissions[index],
+                            onChanged: (int? value) {
+                              newEmployee.updateRolePermission(index, value!);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
         ),
       ),
     );
   }
-
-  Widget buildPermissionCard(Permission permission) {
-    return Card(
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 15.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(permission.title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Row(
-              children: [
-                Flexible(
-                  child: RadioListTile<int>(
-                    activeColor: Colors.blueAccent,
-                    title: Text('Đọc và Ghi'),
-                    value: 0,
-                    groupValue: permission.groupValue,
-                    onChanged: (int? value) {
-                      permission.onChange(value);
-                    },
-                  ),
-                ),
-                Flexible(
-                  child: RadioListTile<int>(
-                    activeColor: Colors.blueAccent,
-                    title: Text('Chỉ Đọc'),
-                    value: 1,
-                    groupValue: permission.groupValue,
-                    onChanged: (int? value) {
-                      permission.onChange(value);
-                    },
-                  ),
-                ),
-                Flexible(
-                  child: RadioListTile<int>(
-                    activeColor: Colors.blueAccent,
-                    title: Text('Không Có Quyền'),
-                    value: 2,
-                    groupValue: permission.groupValue,
-                    onChanged: (int? value) {
-                      permission.onChange(value);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-class Permission {
-  String title;
-  int groupValue;
-  Function(int?) onChange;
-
-  Permission({
-    required this.title,
-    required this.groupValue,
-    required this.onChange,
-  });
 }

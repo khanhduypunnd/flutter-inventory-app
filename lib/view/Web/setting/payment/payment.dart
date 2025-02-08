@@ -8,7 +8,7 @@ class Payment extends StatefulWidget {
 }
 
 class _MyAppState extends State<Payment> {
-  List<String> selectedPayments = []; // Danh sách các phương thức thanh toán đã chọn
+  List<String> selectedPayments = [];
   List<String> allPayments = [
     'Tiền mặt',
     'Chuyển khoản qua ngân hàng',
@@ -18,7 +18,6 @@ class _MyAppState extends State<Payment> {
     'VNPAY'
   ];
 
-  // Một Map để ánh xạ tên payment tới các logo hình ảnh tương ứng
   Map<String, String> paymentImages = {
     'Tiền mặt': logo_payment.cash,
     'Chuyển khoản qua ngân hàng': logo_payment.bank,

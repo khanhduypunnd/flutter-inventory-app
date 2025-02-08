@@ -50,7 +50,7 @@ class _ListPromotionState extends State<ListPromotion> {
               "value": promotion.value.toString(),
               "value_limit": promotion.valueLimit.toString(),
               "beginning": promotion.beginning.toIso8601String(),
-              "expiration": promotion.expiration?.toIso8601String() ?? '',
+              "expiration": promotion.expiration.toIso8601String() ?? '',
             };
           }).toList();
           totalPromotions = promotions.length;
@@ -193,7 +193,6 @@ class _ListPromotionState extends State<ListPromotion> {
 
     overlay.insert(overlayEntry);
 
-    // Remove the toast after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       overlayEntry.remove();
     });
