@@ -5,7 +5,7 @@ import 'order/list_order.dart';
 import 'product/list_product/list_product.dart';
 import 'product/new_product/new_product.dart';
 import 'customer/list_customer/list_customer.dart';
-import 'inventory/inventory_overall/inventory_details.dart';
+import 'inventory/inventory_overall/inventory_overall.dart';
 import 'inventory/adjust_inventory/adjust_inventory.dart';
 import 'inventory/adjust_history/adjust_inventory_history.dart';
 import 'promotion/new_promotion.dart';
@@ -14,6 +14,7 @@ import 'report/analysis.dart';
 import 'setting/setting_screen.dart';
 import 'drawer.dart';
 import '../../shared/core/theme/colors_app.dart';
+
 
 class MyApp extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;

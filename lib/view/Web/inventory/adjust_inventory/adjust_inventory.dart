@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../shared/core/services/uriApi.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 import '../popup/search_product.dart';
 import '../../../../data/gan.dart';
@@ -14,6 +15,8 @@ class AdjustInventory extends StatefulWidget {
 }
 
 class _AdjustInventoryState extends State<AdjustInventory> {
+  final ApiService uriAPIService = ApiService();
+
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   bool isLoading = false;
@@ -44,7 +47,7 @@ class _AdjustInventoryState extends State<AdjustInventory> {
     });
 
     try {
-      final url = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/products');
+      final url = Uri.parse(uriAPIService.apiUrlProduct);
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -56,7 +59,6 @@ class _AdjustInventoryState extends State<AdjustInventory> {
           _searchResults = _allProducts;
         });
 
-        print('API Response: ${response.body}');
       } else {
         throw Exception('Failed to fetch products: ${response.statusCode}');
       }
@@ -188,11 +190,9 @@ class _AdjustInventoryState extends State<AdjustInventory> {
       }).toList(),
     };
 
-    print(ganData);
-
     try {
       final response =
-      await http.post(Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/grn'),
+      await http.post(Uri.parse(uriAPIService.apiUrlGan),
           headers: {
             'Content-Type': 'application/json',
           },
@@ -220,27 +220,85 @@ class _AdjustInventoryState extends State<AdjustInventory> {
     }
   }
 
+  // Future<void> _updateProductQuantities(List<GANDetail> details) async {
+  //   for (var detail in details) {
+  //     try {
+  //
+  //       final urlGet = Uri.parse('${uriAPIService.apiUrlProduct}/${detail.productId}');
+  //       final responseGet = await http.get(urlGet);
+  //
+  //       if (responseGet.statusCode == 200) {
+  //         final productData = jsonDecode(responseGet.body);
+  //
+  //         final sizeIndex = productData['sizes'].indexOf(detail.size[0]);
+  //         if (sizeIndex == -1) {
+  //           print('Size ${detail.size[0]} not found for product ${detail.productId}');
+  //         }
+  //
+  //         productData['quantities'][sizeIndex] = detail.newQuantity;
+  //
+  //         print(productData);
+  //
+  //         final urlPut = Uri.parse('${uriAPIService.apiUrlProduct}/${detail.productId}');
+  //         final responsePut = await http.put(
+  //           urlPut,
+  //           headers: {
+  //             'Content-Type': 'application/json',
+  //           },
+  //           body: jsonEncode(productData),
+  //         );
+  //
+  //         if (responsePut.statusCode == 200 || responsePut.statusCode == 204) {
+  //           if (kDebugMode) {
+  //             print('Product ${detail.productId} updated successfully');
+  //           }
+  //         } else {
+  //           if (kDebugMode) {
+  //             print('Failed to update product ${detail.productId}: ${responsePut.statusCode}');
+  //           }
+  //           if (kDebugMode) {
+  //             print('Response: ${responsePut.body}');
+  //           }
+  //         }
+  //       } else {
+  //         if (kDebugMode) {
+  //           print('Failed to fetch product ${detail.productId}: ${responseGet.statusCode}');
+  //         }
+  //       }
+  //     } catch (error) {
+  //       if (kDebugMode) {
+  //         print('Error updating product ${detail.productId}: $error');
+  //       }
+  //     }
+  //   }
+  // }
+  //
+
   Future<void> _updateProductQuantities(List<GANDetail> details) async {
     for (var detail in details) {
       try {
-
-        final urlGet = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/products/${detail.productId}');
+        final urlGet = Uri.parse('${uriAPIService.apiUrlProduct}/${detail.productId}');
         final responseGet = await http.get(urlGet);
 
         if (responseGet.statusCode == 200) {
-          final productData = jsonDecode(responseGet.body);
+          final apiResponse = jsonDecode(responseGet.body);
+
+          if (!apiResponse.containsKey("product") || apiResponse["product"] == null) {
+            print("⚠ Không tìm thấy sản phẩm ${detail.productId}");
+            continue;
+          }
+
+          final productData = apiResponse["product"];
 
           final sizeIndex = productData['sizes'].indexOf(detail.size[0]);
           if (sizeIndex == -1) {
             print('Size ${detail.size[0]} not found for product ${detail.productId}');
-            // continue;
           }
 
           productData['quantities'][sizeIndex] = detail.newQuantity;
-
           print(productData);
 
-          final urlPut = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/products/${detail.productId}');
+          final urlPut = Uri.parse('${uriAPIService.apiUrlProduct}/${detail.productId}');
           final responsePut = await http.put(
             urlPut,
             headers: {
@@ -250,20 +308,29 @@ class _AdjustInventoryState extends State<AdjustInventory> {
           );
 
           if (responsePut.statusCode == 200 || responsePut.statusCode == 204) {
-            print('Product ${detail.productId} updated successfully');
+            if (kDebugMode) {
+              print('Product ${detail.productId} updated successfully');
+            }
           } else {
-            print('Failed to update product ${detail.productId}: ${responsePut.statusCode}');
-            print('Response: ${responsePut.body}');
+            if (kDebugMode) {
+              print('Failed to update product ${detail.productId}: ${responsePut.statusCode}');
+            }
+            if (kDebugMode) {
+              print('Response: ${responsePut.body}');
+            }
           }
         } else {
-          print('Failed to fetch product ${detail.productId}: ${responseGet.statusCode}');
+          if (kDebugMode) {
+            print('Failed to fetch product ${detail.productId}: ${responseGet.statusCode}');
+          }
         }
       } catch (error) {
-        print('Error updating product ${detail.productId}: $error');
+        if (kDebugMode) {
+          print('Error updating product ${detail.productId}: $error');
+        }
       }
     }
   }
-
 
   void showCustomToast(BuildContext context, String message) {
     final overlay = Overlay.of(context);

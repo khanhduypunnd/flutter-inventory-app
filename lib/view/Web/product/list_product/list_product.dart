@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/core/services/uriApi.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 import '../../../../../data/product.dart';
 import 'dart:convert';
@@ -12,6 +13,8 @@ class ListProduct extends StatefulWidget {
 }
 
 class _ListProductState extends State<ListProduct> {
+  final ApiService uriAPIService = ApiService();
+
   late int rowsPerPage = 20;
   int currentPage = 1;
   int totalProducts = 0;
@@ -30,7 +33,7 @@ class _ListProductState extends State<ListProduct> {
     });
 
     try {
-      final url = Uri.parse('https://dacntt1-api-server-4rtx90o6z-haonguyen9191s-projects.vercel.app/api/products');
+      final url = Uri.parse(uriAPIService.apiUrlProduct);
       final response = await http.get(url);
 
       if (response.statusCode == 200) {

@@ -2,7 +2,7 @@
 export 'constants/api_constants.dart';
 
 // Export Services
-export 'services/api.dart';
+export 'services/uriApi.dart';
 
 // Export App Theme
 export 'theme/colors.dart';

@@ -19,7 +19,7 @@ class GAN {
     return GAN(
       ganId: data['ganId'] ?? '',
       staffId: data['sId'] ?? '',
-      date: DateTime.fromMillisecondsSinceEpoch(data['date']['_seconds'] * 1000),
+      date: DateTime.fromMillisecondsSinceEpoch(data['date']['_seconds'] * 1000).toUtc(),
       increasedQuantity: data['increasedQuantity'] ?? 0,
       decreasedQuantity: data['decreasedQuantity'] ?? 0,
       note: data['note'] ?? '',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/core/services/uriApi.dart';
 import 'adjust_list_detail.dart';
 import 'adjust_invent_bonus_detail.dart';
 import '../../../../data/product_adjust.dart';
@@ -44,6 +45,8 @@ class InventoryScreen extends StatefulWidget {
 }
 
 class _InventoryScreenState extends State<InventoryScreen> {
+  final ApiService uriAPIService = ApiService();
+
   late String warehouseChange;
   late int increaseAmount;
   late int decreaseAmount;
@@ -87,7 +90,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     });
 
     try {
-      final url = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/products');
+      final url = Uri.parse(uriAPIService.apiUrlProduct);
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -126,11 +129,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
       final productName = productNames[detail['pid']] ?? 'Unknown Product';
       return ProductDetail(
         productId: detail['pid'],
-        productName: productName, // Hiển thị tên sản phẩm từ API
+        productName: productName,
         size: detail['size'].join(", "),
         oldQuantity: detail['oldQuantity'],
         newQuantity: detail['newQuantity'],
-        different: detail['newQuantity'] - detail['oldQuantity'], // Dùng để hiển thị thay đổi
+        different: detail['newQuantity'] - detail['oldQuantity'],
       );
     }).toList();
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import '../../../../data/customer.dart';
+import '../../../../shared/core/services/uriApi.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -11,6 +12,9 @@ class CustomerList extends StatefulWidget {
 }
 
 class _CustomerListState extends State<CustomerList> {
+  final ApiService uriAPIService = ApiService();
+
+
   late int rowsPerPage = 20;
   int currentPage = 1;
   int totalCustomers = 682;
@@ -23,32 +27,6 @@ class _CustomerListState extends State<CustomerList> {
     fetchCustomers();
   }
 
-  // Future<void> _fetchCustomers() async {
-  //   setState(() {
-  //     isLoading = true;
-  //   });
-  //
-  //   await Future.delayed(const Duration(seconds: 1));
-  //
-  //   int startIndex = (currentPage - 1) * rowsPerPage;
-  //
-  //   List<Map<String, dynamic>> newCustomers = List.generate(
-  //     rowsPerPage,
-  //         (index) => {
-  //       "name": "Khách hàng ${startIndex + index + 1}",
-  //       "phone": "098${Random().nextInt(10000000).toString().padLeft(7, '0')}",
-  //       "lastOrder": getRandomDate(),
-  //       "orderCount": Random().nextInt(100),
-  //       "totalSpend": "${Random().nextInt(1000000)} đ",
-  //     },
-  //   );
-  //
-  //   setState(() {
-  //     customers = newCustomers;
-  //     isLoading = false;
-  //   });
-  // }
-
   Future<void> fetchCustomers() async {
     if (customers.isNotEmpty) return;
     setState(() {
@@ -57,7 +35,7 @@ class _CustomerListState extends State<CustomerList> {
 
     try {
       final url = Uri.parse(
-          'https://dacntt1-api-server-4rtx90o6z-haonguyen9191s-projects.vercel.app/api/customers');
+          uriAPIService.apiUrlCustomer);
       final response = await http.get(url);
 
       if (response.statusCode == 200) {

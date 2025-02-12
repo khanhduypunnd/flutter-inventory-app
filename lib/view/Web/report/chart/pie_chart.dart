@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-void main() {
-  runApp(const MyApp());
+class InteractivePieChart extends StatefulWidget {
+  final Map<String, double> paymentData;
+  const InteractivePieChart({super.key, required this.paymentData});
+
+  @override
+  State<InteractivePieChart> createState() => _InteractivePieChartState();
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class _InteractivePieChartState extends State<InteractivePieChart> {
+  int? touchedIndex;
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(body: Center(child: Pie_Chart())),
-    );
-  }
-}
+    final filteredData = widget.paymentData.entries.where((entry) => entry.value > 0).toMap();
+    double total = filteredData.values.fold(0, (sum, value) => sum + value);
 
-class Pie_Chart extends StatelessWidget {
-  const Pie_Chart({super.key});
-
-  @override
-  Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -31,77 +26,103 @@ class Pie_Chart extends StatelessWidget {
           width: 300,
           child: PieChart(
             PieChartData(
-              sections: showingSections(),
+              sections: _buildSections(filteredData, total),
               borderData: FlBorderData(show: false),
               centerSpaceRadius: 50,
+              pieTouchData: PieTouchData(
+                touchCallback: (event, response) {
+                  setState(() {
+                    touchedIndex = response?.touchedSection?.touchedSectionIndex;
+                  });
+                },
+              ),
             ),
           ),
         ),
-
-
         const SizedBox(height: 20),
-
-
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildLegendContainer(Colors.orange, "Visa/Master"),
-            const SizedBox(width: 20),
-            _buildLegendContainer(Colors.teal, "Chuyển khoản"),
-          ],
-        ),
+        _buildLegend(filteredData),
       ],
     );
   }
 
-  // Dữ liệu cho Pie Chart
-  List<PieChartSectionData> showingSections() {
-    return [
-      PieChartSectionData(
-        color: Colors.blue,
-        value: 64.55,
-        title: '64.55%',
-        radius: 50,
-        titleStyle: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-      PieChartSectionData(
-        color: Colors.orange,
-        value: 35.45,
-        title: '35.45%',
-        radius: 50,
-        titleStyle: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-    ];
+  List<PieChartSectionData> _buildSections(Map<String, double> data, double total) {
+    return data.entries.mapIndexed((index, entry) {
+      double percentage = (entry.value / total) * 100;
+      bool isTouched = index == touchedIndex;
+      double radius = isTouched ? 60 : 50;
+
+      return PieChartSectionData(
+        color: _getColor(entry.key),
+        value: entry.value,
+        title: '',
+        radius: radius,
+        badgeWidget: _buildPercentageBadge('${percentage.toStringAsFixed(1)}%'),
+        badgePositionPercentageOffset: 1.5,
+      );
+    }).toList();
   }
 
-  // Widget để tạo các container mô tả dữ liệu
-  Widget _buildLegendContainer(Color color, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 16,
-            height: 16,
-            color: color,
-          ),
-          const SizedBox(width: 8),
-          Text(label, style: const TextStyle(fontSize: 16)),
-        ],
+  Widget _buildPercentageBadge(String percentage) {
+    return Text(
+      percentage,
+      style: const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+        color: Colors.black,
       ),
     );
+  }
+
+  Widget _buildLegend(Map<String, double> data) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: data.keys.map((key) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 16,
+              height: 16,
+              color: _getColor(key),
+            ),
+            const SizedBox(width: 8),
+            Text(key),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  Color _getColor(String label) {
+    switch (label) {
+      case "Tiền mặt":
+        return Colors.teal;
+      case "Chuyển khoản":
+        return Colors.indigoAccent.shade400;
+      case "Momo":
+        return Colors.purple.shade700;
+      case "Visa/Master":
+        return Colors.orange.shade800;
+      case "ZaloPay":
+        return Colors.blueAccent.shade400;
+      case "VNPay":
+        return Colors.deepOrangeAccent.shade400;
+      default:
+        return Colors.grey;
+    }
+  }
+}
+
+extension MapExtension<K, V> on Iterable<MapEntry<K, V>> {
+  Map<K, V> toMap() {
+    return {for (var entry in this) entry.key: entry.value};
+  }
+}
+
+extension IndexedIterable<E> on Iterable<E> {
+  Iterable<T> mapIndexed<T>(T Function(int index, E element) f) {
+    var index = 0;
+    return map((e) => f(index++, e));
   }
 }

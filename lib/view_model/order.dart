@@ -6,8 +6,11 @@ import 'package:flutter/foundation.dart';
 
 import '../data/customer.dart';
 import '../data/order.dart';
+import '../shared/core/services/uriApi.dart';
 
 class ListOrderModel extends ChangeNotifier{
+  final ApiService uriAPIService = ApiService();
+
   List<Order> orders = [];
   List<Customer> customers = [];
 
@@ -22,7 +25,7 @@ class ListOrderModel extends ChangeNotifier{
 
     final int startIndex = (currentPage - 1) * rowsPerPage;
     final String apiUrl =
-        'https://dacntt1-api-server-5nhee8ay7-haonguyen9191s-projects.vercel.app/api/orders';
+        uriAPIService.apiUrlOrder;
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
@@ -55,9 +58,11 @@ class ListOrderModel extends ChangeNotifier{
 
   Future<void> fetchCustomers() async {
     isLoading = true;
+
+
     try {
       final url = Uri.parse(
-          'https://dacntt1-api-server-5nhee8ay7-haonguyen9191s-projects.vercel.app/api/customers');
+          uriAPIService.apiUrlCustomer);
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -77,9 +82,9 @@ class ListOrderModel extends ChangeNotifier{
     notifyListeners();
   }
 
-  String getCustomerName(String cid) {
+  String getCustomerName(String id) {
     final customer = customers.firstWhere(
-          (c) => c.cid == cid,
+          (c) => c.id == id,
       orElse: () => Customer(id: '', cid: '', name: 'Không xác định', email: '', dob: DateTime.now(), pass: '',phone: '', address: ''),
     );
     return customer.name;

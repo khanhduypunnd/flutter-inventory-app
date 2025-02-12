@@ -9,7 +9,7 @@ class Analysis extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
         backgroundColor: AppColors.backgroundColor ,
         appBar: AppBar(
@@ -20,6 +20,11 @@ class Analysis extends StatelessWidget {
               Tab(text: 'Phân tích kinh doanh'),
               Tab(text: 'Quản lý tồn kho'),
             ],
+            labelColor: Colors.blueAccent,
+            unselectedLabelColor: Colors.black,
+            indicator: UnderlineTabIndicator(
+              insets: EdgeInsets.symmetric(horizontal: 16),
+            ),
           ),
         ),
         body: const TabBarView(

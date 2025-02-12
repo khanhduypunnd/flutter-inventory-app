@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/core/services/uriApi.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 import 'adjust_inven_detail.dart';
 import 'dart:convert';
@@ -13,6 +14,8 @@ class AdjustInventoryHistory extends StatefulWidget {
 }
 
 class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
+  final ApiService uriAPIService = ApiService();
+
   int rowsPerPage = 20;
   int currentPage = 1;
   int totalChecks = 0;
@@ -33,7 +36,7 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
 
     try {
       final url = Uri.parse(
-          'https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/grn');
+          uriAPIService.apiUrlGan);
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -46,7 +49,7 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
               ganId: item['ganId'] ?? '',
               staffId: item['sId'] ?? '',
               date: DateTime.fromMillisecondsSinceEpoch(
-                  item['date']['_seconds'] * 1000),
+                  item['date']['_seconds'] * 1000).toUtc(),
               increasedQuantity: item['increasedQuantity'] ?? 0,
               decreasedQuantity: item['descreaedQuantity'] ?? 0,
               note: item['note'] ?? '',

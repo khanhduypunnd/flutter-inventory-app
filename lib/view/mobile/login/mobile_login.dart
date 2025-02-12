@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'side/right_side.dart';
 import 'side/left_side.dart';
 
-class WebLogin extends StatefulWidget {
-  const WebLogin({super.key});
+class MobileLogin extends StatefulWidget {
+  const MobileLogin({super.key});
 
   @override
-  State<WebLogin> createState() => _WebLoginState();
+  State<MobileLogin> createState() => _WebLoginState();
 }
 
-class _WebLoginState extends State<WebLogin> {
+class _WebLoginState extends State<MobileLogin> {
 
   late double maxWidth, maxHeight;
   late Size preferredAppbarSize;
@@ -37,11 +37,15 @@ class _WebLoginState extends State<WebLogin> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Row(
-        children: [
-          const Expanded(flex: 1, child: RightSide()),
-          Expanded(flex: 1, child: LeftSide())
-        ],
+      body: Container(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const Expanded(flex: 1, child: RightSide()),
+              Expanded(flex: 1, child: LeftSide())
+            ],
+          ),
+        ),
       ),
     );
   }

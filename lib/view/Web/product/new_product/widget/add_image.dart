@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 
-class ImageUpload extends StatelessWidget {
-  final Function onAddImage;
-  final Function onAddFromURL;
+class ImageUpload extends StatefulWidget {
+  final Function(String) onAddFromURL;
 
   const ImageUpload({
     super.key,
-    required this.onAddImage,
     required this.onAddFromURL,
   });
+
+  @override
+  _ImageUploadState createState() => _ImageUploadState();
+}
+
+class _ImageUploadState extends  State<ImageUpload> {
+
+  final TextEditingController _urlController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -34,14 +40,21 @@ class ImageUpload extends StatelessWidget {
             color: Colors.grey,
           ),
           const SizedBox(height: 10),
-          TextButton(
-            onPressed: () => onAddImage(),
-            child: const Text('Thêm ảnh', style: TextStyle(color: Colors.blue)),
+          TextField(
+            controller: _urlController,
+            decoration: const InputDecoration(
+              hintText: 'Nhập URL ảnh',
+              border: OutlineInputBorder(),
+            ),
           ),
           TextButton(
-            onPressed: () => onAddFromURL(),
+            onPressed: () {
+              if (_urlController.text.isNotEmpty) {
+                widget.onAddFromURL(_urlController.text);
+              }
+            },
             child: const Text(
-              'Thêm từ URL (Hình ảnh/Video)',
+              'Thêm từ URL',
               style: TextStyle(color: Colors.blue),
             ),
           ),

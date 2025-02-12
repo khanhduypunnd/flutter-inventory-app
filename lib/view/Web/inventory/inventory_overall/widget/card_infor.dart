@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../../shared/core/theme/colors_app.dart';
+import '../../../../../view_model/inventory_overall.dart';
 
 class SummaryCards extends StatelessWidget {
   final int totalStock;
-  final int totalSalePrice;
-  final int totalValue;
-  final int totalProfit;
+  final double totalSalePrice;
+  final double totalValue;
+  final double totalProfit;
 
   final double maxWidth;
 
@@ -20,6 +22,8 @@ class SummaryCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final inventoryOverall = Provider.of<InventoryOverallModel>(context);
+
     bool isCheck = maxWidth > 1000;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
@@ -33,17 +37,17 @@ class SummaryCards extends StatelessWidget {
           SizedBox(width: 20,),
           Expanded(
             flex: 1,
-            child: _buildInfoCard('Tổng giá bán', '$totalSalePrice đ'),
+            child: _buildInfoCard('Tổng giá bán', '${inventoryOverall.formatCurrencyDouble(totalSalePrice)} đ'),
           ),
           SizedBox(width: 20,),
           Expanded(
             flex: 1,
-            child: _buildInfoCard('Tổng giá trị', '$totalValue đ'),
+            child: _buildInfoCard('Tổng giá trị', '${inventoryOverall.formatCurrencyDouble(totalValue)} đ'),
           ),
           SizedBox(width: 20,),
           Expanded(
             flex: 1,
-            child: _buildInfoCard('Tổng lợi nhuận', '$totalProfit đ'),
+            child: _buildInfoCard('Tổng lợi nhuận', '${inventoryOverall.formatCurrencyDouble(totalProfit)} đ'),
           ),
         ],
       ):

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import '../../../../shared/core/services/uriApi.dart';
 import 'widget/general_container.dart';
 import 'widget/add_image.dart';
 import 'widget/varients.dart';
@@ -16,6 +17,8 @@ class NewProduct extends StatefulWidget {
 }
 
 class _NewProductState extends State<NewProduct> {
+  final ApiService uriAPIService = ApiService();
+
   TextEditingController nameController = TextEditingController();
   TextEditingController supplierController = TextEditingController();
   TextEditingController notesController = TextEditingController();
@@ -28,6 +31,8 @@ class _NewProductState extends State<NewProduct> {
 
   List<Map<String, dynamic>> variants = [
   ];
+
+  String? imageUrl;
 
   void _onVariantsChanged(List<Map<String, dynamic>> updatedVariants) {
     setState(() {
@@ -109,7 +114,7 @@ class _NewProductState extends State<NewProduct> {
       'actualPrices': actualPrices,
       'sellPrices': sellPrices,
       'quantities': quantities,
-      'image': 'https://example.com/default.png',
+      'image': imageUrl,
       'notes': notesController.text
           .split(',')
           .map((note) => note.trim())
@@ -182,7 +187,7 @@ class _NewProductState extends State<NewProduct> {
   Future<void> _sendProductData(Map<String, dynamic> productData) async {
     try {
       final response = await http.post(
-        Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/products'),
+        Uri.parse(uriAPIService.apiUrlProduct),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(productData),
       );
@@ -266,13 +271,12 @@ class _NewProductState extends State<NewProduct> {
 
               const SizedBox(height: 20),
 
-              // Tải ảnh
+
               ImageUpload(
-                onAddImage: () {
-                  print("Thêm ảnh từ thiết bị");
-                },
-                onAddFromURL: () {
-                  print("Thêm ảnh từ URL");
+                onAddFromURL: (String url) {
+                  setState(() {
+                    imageUrl = url;
+                  });
                 },
               ),
 

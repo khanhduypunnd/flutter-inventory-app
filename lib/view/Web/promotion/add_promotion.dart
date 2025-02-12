@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'new_promotion.dart';
 
-class add_promotion extends StatelessWidget {
+class AddPromotion extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
-  add_promotion({super.key, required this.navigatorKey});
+  AddPromotion({super.key, required this.navigatorKey});
 
   String _selectedPage = 'Khuyến mãi > Khuyến mãi mới > Tạo mã';
 

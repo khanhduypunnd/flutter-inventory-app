@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../shared/core/theme/colors_app.dart';
+import '../../../../view/Web/dashboard_web.dart';
+import '../../../../view_model/login.dart';
 
 class LeftSide extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
-    );
-  }
-}
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
-class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,9 +23,9 @@ class LoginScreen extends StatelessWidget {
                 const Text(
                   'Đăng nhập',
                   style: TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.bold,
-                  ),
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.titleColor),
                 ),
                 const SizedBox(height: 10),
                 Text(
@@ -37,15 +34,21 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 TextField(
+                  cursorColor: Colors.blueAccent,
+                  controller: emailController,
                   decoration: InputDecoration(
-                    labelText: 'Tên đăng nhập',
+                    labelText: 'Email',
+                    labelStyle: const TextStyle(color: Colors.blueAccent),
+                    border: OutlineInputBorder(),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.grey, width: 1.0),
-                      borderRadius: BorderRadius.circular(3.0), // Bo góc viền
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 1.0),
+                      borderRadius: BorderRadius.circular(5.0),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.blueAccent, width: 1.0),
-                      borderRadius: BorderRadius.circular(3.0),
+                      borderSide: const BorderSide(
+                          color: Colors.blueAccent, width: 2.0),
+                      borderRadius: BorderRadius.circular(5.0),
                     ),
                     filled: true,
                     fillColor: Colors.white,
@@ -53,72 +56,74 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 TextField(
+                  cursorColor: Colors.blueAccent,
+                  controller: passwordController,
                   decoration: InputDecoration(
                     labelText: 'Mật khẩu',
+                    labelStyle: const TextStyle(color: Colors.blueAccent),
+                    border: OutlineInputBorder(),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.grey, width: 1.0),
-                      borderRadius: BorderRadius.circular(3.0),
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 1.0),
+                      borderRadius: BorderRadius.circular(5.0),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.blueAccent, width: 1.0),
-                      borderRadius: BorderRadius.circular(3.0),
+                      borderSide: const BorderSide(
+                          color: Colors.blueAccent, width: 2.0),
+                      borderRadius: BorderRadius.circular(5.0),
                     ),
                     filled: true,
                     fillColor: Colors.white,
                   ),
                   obscureText: true,
                 ),
-                const SizedBox(height: 10),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-
-                    },
-                    child: const Text('Quên mật khẩu', style: TextStyle(color: Colors.blueAccent),),
-                  ),
-                ),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
+                Consumer<LoginModel>(
+                  builder: (context, loginModel, child) {
+                    return Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: loginModel.isLoading
+                              ? null
+                              : () async {
+                            String email = emailController.text.trim();
+                            String password = passwordController.text.trim();
 
+                            bool success = await loginModel.login(context,email, password);
+                            if (success) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DashboardWeb(navigatorKey: GlobalKey<NavigatorState>()),
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(double.infinity, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                          ),
+                          child: loginModel.isLoading
+                              ? const CircularProgressIndicator(color: Colors.blueAccent,)
+                              : const Text("Đăng nhập"),
+                        ),
+                        if (loginModel.errorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              loginModel.errorMessage!,
+                              style: const TextStyle(color: Colors.red, fontSize: 14),
+                            ),
+                          ),
+                      ],
+                    );
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 50),
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 25),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    side: const BorderSide(color: Colors.blue, width: 1),
-                  ),
-                  child: const Text(
-                    'Đăng nhập',
-                    style: TextStyle(fontSize: 18, color: Colors.white),
-                  ),
                 ),
-                const SizedBox(height: 20),
-                const Text('Hoặc', style: TextStyle(color: Colors.white54),),
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: () {
 
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.grey),
-                  ),
-                  icon: const Icon(
-                    Icons.g_translate,
-                    color: Colors.red,
-                  ),
-                  label: const Text(
-                    'Đăng nhập bằng Google',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                ),
               ],
             ),
           ),

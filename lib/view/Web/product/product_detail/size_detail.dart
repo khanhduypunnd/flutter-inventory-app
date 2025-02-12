@@ -1,20 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ProductDetailsWidget(),
-    );
-  }
-}
-
 class ProductDetailsWidget extends StatefulWidget {
   @override
   _ProductDetailsWidgetState createState() => _ProductDetailsWidgetState();

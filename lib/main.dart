@@ -1,56 +1,52 @@
-import 'package:dacntt1_mobile_admin/view/Web/dashboard_web.dart';
-import 'package:dacntt1_mobile_admin/view/mobile/dashboard_mobile.dart';
+import 'package:dacntt1_mobile_admin/view/Web/login/login_view.dart';
+import 'package:dacntt1_mobile_admin/view/mobile/login/mobile_login.dart';
 import 'package:dacntt1_mobile_admin/view_model/dashboard.dart';
+import 'package:dacntt1_mobile_admin/view_model/inventory_overall.dart';
 import 'package:dacntt1_mobile_admin/view_model/new_employee.dart';
 import 'package:dacntt1_mobile_admin/view_model/order.dart';
-import 'package:flutter/foundation.dart';
+import 'package:dacntt1_mobile_admin/view_model/report.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'view/Web/dashboard_web.dart';
+import 'view/Mobile/dashboard_mobile.dart';
+import 'view_model/login.dart';
 
-void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => DashboardModel()),
-        ChangeNotifierProvider(create: (_) => NewEmployee()),
-        ChangeNotifierProvider(create: (_) => ListOrderModel())
-      ],
-      child: const MyApp(),
-    ),
-  );
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('auth_token');
+
+  runApp(MyApp(isLoggedIn: true));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+
+  const MyApp({Key? key, required this.isLoggedIn}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: MyHomePage(title: 'tilte',),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LoginModel()),
+        ChangeNotifierProvider(create: (_) => DashboardModel()),
+        ChangeNotifierProvider(create: (_) => NewEmployee()),
+        ChangeNotifierProvider(create: (_) => ListOrderModel()),
+        ChangeNotifierProvider(create: (_) => InventoryOverallModel()),
+        ChangeNotifierProvider(create: (_) => ReportModel())
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: isLoggedIn
+            ? (kIsWeb
+            ? DashboardWeb(navigatorKey: GlobalKey<NavigatorState>())
+            : DashboardMobile(navigatorKey: GlobalKey<NavigatorState>(),))
+            : (kIsWeb
+            ? WebLogin()
+            : MobileLogin()),
+      ),
     );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-  @override
-  Widget build(BuildContext context) {
-    if(kIsWeb){
-      return DashboardWeb(navigatorKey: navigatorKey,);
-    } else {
-      return DashboardMobile(navigatorKey: navigatorKey);
-    }
   }
 }

@@ -1,18 +1,5 @@
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ListFilter(),
-    );
-  }
-}
+import '../../../shared/core/services/uriApi.dart';
 
 class ListFilter extends StatefulWidget {
   @override
@@ -20,12 +7,12 @@ class ListFilter extends StatefulWidget {
 }
 
 class _ListFilterState extends State<ListFilter> {
-  // Các giá trị cho Dropdown
+  final ApiService uriAPIService = ApiService();
+
   String? selectedKho;
   String? selectedLoaiSanPham;
   String? selectedNhaCungCap;
 
-  // Dữ liệu cho các Dropdown
   List<String> khoList = ['Kho 1', 'Kho 2', 'Kho 3', 'Kho 4'];
   List<String> loaiSanPhamList = ['Nước hoa Nam', 'Nước hoa Nữ', 'Unisex', 'Giftset'];
   List<String> nhaCungCapList = ['Nhà cung cấp 1', 'Nhà cung cấp 2', 'Nhà cung cấp 3'];

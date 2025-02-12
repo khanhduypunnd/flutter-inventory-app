@@ -5,8 +5,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../data/employee.dart';
+import '../shared/core/services/uriApi.dart';
 
 class NewEmployee with ChangeNotifier {
+  final ApiService uriAPIService = ApiService();
+
   final TextEditingController nameController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -36,7 +39,7 @@ class NewEmployee with ChangeNotifier {
 
   Future<void> fetchLatestStaffId() async {
     final String apiUrl =
-        'https://dacntt1-api-server-5nhee8ay7-haonguyen9191s-projects.vercel.app/api/staffs';
+        uriAPIService.apiUrlStaff;
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
@@ -77,7 +80,7 @@ class NewEmployee with ChangeNotifier {
 
   Future<void> sendStaff(BuildContext context) async {
     String apiUrl =
-        'https://dacntt1-api-server-5nhee8ay7-haonguyen9191s-projects.vercel.app/api/staffs/register';
+       uriAPIService.apiUrlStaffRegister;
 
     Staff newStaff = Staff(
       sid: newStaffId,
@@ -133,7 +136,7 @@ class NewEmployee with ChangeNotifier {
   }
 
   Future<void> fetchStaffs() async{
-    String api = 'https://dacntt1-api-server-5nhee8ay7-haonguyen9191s-projects.vercel.app/api/staffs';
+    String api = uriAPIService.apiUrlStaff;
 
     try {
       isLoading = true;
@@ -163,11 +166,11 @@ class NewEmployee with ChangeNotifier {
   }
 
   Future<void> deleteStaff(BuildContext context,String sid) async {
-    final String apiUrl =
-        'https://dacntt1-api-server-5nhee8ay7-haonguyen9191s-projects.vercel.app/api/staffs/$sid';
+    final String apiUrl = uriAPIService.apiUrlStaff;
+
 
     try {
-      final response = await http.delete(Uri.parse(apiUrl));
+      final response = await http.delete(Uri.parse('$apiUrl/$sid'));
 
       if (response.statusCode == 200) {
         if (kDebugMode) {

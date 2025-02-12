@@ -2,28 +2,14 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
 import '../../../../shared/core/theme/colors_app.dart';
+import '../../../../view_model/report.dart';
 import '../chart/line_chart.dart';
 import '../chart/pie_chart.dart';
 import '../chart/best_product.dart';
 import '../kpi_cards/kpi_card.dart';
-import '../pick_date.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: InventoryAnalysis(),
-    );
-  }
-}
+import '../../pickdate/pick_date.dart';
 
 class InventoryAnalysis extends StatefulWidget {
   const InventoryAnalysis({super.key});
@@ -36,6 +22,23 @@ class _ReportDashboardState extends State<InventoryAnalysis> {
 
   late double maxWidth, maxHeight;
 
+  DateTime? startDate1, endDate1;
+  DateTime? startDate2, endDate2;
+
+  void _onDateSelected1(DateTime? start, DateTime? end) {
+    setState(() {
+      startDate1 = start;
+      endDate1 = end;
+    });
+  }
+
+  void _onDateSelected2(DateTime? start, DateTime? end) {
+    setState(() {
+      startDate2 = start;
+      endDate2 = end;
+    });
+  }
+
   @override
   void didChangeDependencies() {
     // TODO: implement didChangeDependencies
@@ -44,10 +47,25 @@ class _ReportDashboardState extends State<InventoryAnalysis> {
     maxHeight = MediaQuery.of(context).size.height;
   }
 
+  void _fetchComparisonData() {
+    if (startDate1 != null && startDate2 != null) {
+      Future.microtask(() {
+        Provider.of<ReportModel>(context, listen: false).fetchComparisonData(startDate1!, endDate1!, startDate2!, endDate2!);
+        Provider.of<ReportModel>(context, listen: false).fetchProducts();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isStop = maxWidth < 650;
     bool isWarning = maxWidth < 900;
+
+    final reportModel = Provider.of<ReportModel>(context);
+
+    Map<String, double> paymentData = reportModel.getPaymentMethodData(reportModel.filteredOrders1);
+
+    List<MapEntry<String, int>>  bestSellingProducts = reportModel.bestSellingProducts;
 
     return SafeArea(
       child: Scaffold(
@@ -60,7 +78,7 @@ class _ReportDashboardState extends State<InventoryAnalysis> {
               children: [
                 Container(
                   width: MediaQuery.of(context).size.width,
-                  height: 200,
+                  height: 250,
                   padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
@@ -77,48 +95,57 @@ class _ReportDashboardState extends State<InventoryAnalysis> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TimeSelection(),
-                      SizedBox(height: 10,),
-                      Text('So sánh với', style: TextStyle(color: AppColors.titleColor, fontSize: 18, fontWeight: FontWeight.bold),),
-                      SizedBox(height: 10,),
-                      TimeSelection(),
+                      TimeSelection(onDateSelected: _onDateSelected1),
+                      const SizedBox(height: 10,),
+                      const Text('So sánh với', style: TextStyle(color: AppColors.titleColor, fontSize: 18, fontWeight: FontWeight.bold),),
+                      const SizedBox(height: 10,),
+                      TimeSelection(onDateSelected: _onDateSelected2),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.blueAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          elevation: 2,
+                          side: const BorderSide(color: Colors.blueAccent, width: 1),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        onPressed: () {
+                          _fetchComparisonData();
+                        },
+                        child: const Text("So sánh dữ liệu", ),
+                      ),
                     ],
                   ),
                 ),
-                SizedBox(height: 20,),
-                Container(
+                const SizedBox(height: 20,),
+                SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    child: InfoCard(title: 'Số đơn hàng', value:  '11', percentage: '22.22')),
+                    child: InfoCard(title: 'Số đơn hàng', value:  reportModel.filteredOrders1.length.toString(), percentage: reportModel.orderQuantityPercent.toString())),
                 const SizedBox(height: 16),
-                Container(
+                SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    child: InfoCard(title: 'Số đơn hàng trung bình/ngày', value: '13',percentage: '87.71',)),
+                    child: InfoCard(title: 'Số lượng tồn', value: reportModel.inOfStock.toString(), percentage: '--')),
                 const SizedBox(height: 16),
-                Container(
+                SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    child: InfoCard(title: 'Số lượng tồn', value: '2,113', percentage: '--')),
+                    child: InfoCard(title: 'Giá trị tồn',value:  reportModel.formatCurrencyDouble(reportModel.residualValue), percentage: '--')),
                 const SizedBox(height: 16),
-                Container(
+                SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    child: InfoCard(title: 'Giá trị tồn',value:  '1,400,000 ₫', percentage: '--')),
+                    child: InfoCard(title: 'Số sản phẩm đã bán', value:  reportModel.productNumberSold.toString(), percentage: reportModel.productNumberSoldPercent.toString())),
                 const SizedBox(height: 16),
-                Container(
+                SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    child: InfoCard(title: 'Số sản phẩm đã bán', value:  '17', percentage: '54.55')),
-                const SizedBox(height: 16),
-                Container(
-                    width: MediaQuery.of(context).size.width,
-                    child: InfoCard(title: 'Số sản phẩm trung bình/ngày', value: '17',percentage: '54.55',)),
-                const SizedBox(height: 16),
-                Container(
-                    width: MediaQuery.of(context).size.width,
-                    child: InfoCard(title: 'Doanh thu', value: '23,810,000 ₫', percentage: '57.68')),
-                const SizedBox(height: 16),
-                _buildLineChart(),
-                const SizedBox(height: 16),
+                    child: InfoCard(title: 'Doanh thu', value: reportModel.formatCurrencyDouble(reportModel.receivedMoney), percentage: reportModel.receivedMoneyPercent.toString())),
+                // const SizedBox(height: 16),
+                // _buildLineChart(),
+                // const SizedBox(height: 16),
                 // _buildPiechart(),
                 const SizedBox(height: 16),
-                _build_best_product(),
+                _build_best_product(bestSellingProducts),
               ],
             )
                 : isWarning
@@ -140,31 +167,49 @@ class _ReportDashboardState extends State<InventoryAnalysis> {
                       ),
                     ],
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TimeSelection(),
-                      SizedBox(width: 20,),
-                      Text('So sánh với', style: TextStyle(color: AppColors.titleColor, fontSize: 18, fontWeight: FontWeight.bold),),
-                      SizedBox(width: 10,),
-                      TimeSelection(),
-                    ],
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TimeSelection(onDateSelected: _onDateSelected1),
+                        const SizedBox(width: 10,),
+                        const Text('So sánh với', style: TextStyle(color: AppColors.titleColor, fontSize: 18, fontWeight: FontWeight.bold),),
+                        const SizedBox(width: 10,),
+                        TimeSelection(onDateSelected: _onDateSelected2),
+                        const SizedBox(width: 20),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.blueAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            elevation: 2,
+                            side: const BorderSide(color: Colors.blueAccent, width: 1),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          onPressed: () {
+                            _fetchComparisonData();
+                          },
+                          child: const Text("So sánh dữ liệu"),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20,),
                 Row(
                   children: [
-                    Expanded(child: InfoCard(title: 'Số đơn hàng', value:  '11', percentage: '22.22')),
-                    const SizedBox(width: 16),
-                    Expanded(child:InfoCard(title: 'Số đơn hàng trung bình/ngày', value: '13',percentage: '87.71',)),
+                    Expanded(child: InfoCard(title: 'Số đơn hàng', value:  reportModel.filteredOrders1.length.toString(), percentage: reportModel.orderQuantityPercent.toString())),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: InfoCard(title: 'Số lượng tồn', value: '2,113', percentage: '--')),
+                    Expanded(child: InfoCard(title: 'Số lượng tồn', value: reportModel.inOfStock.toString(), percentage: '--')),
                     const SizedBox(width: 16),
-                    Expanded(child:InfoCard(title: 'Giá trị tồn',value:  '1,400,000 ₫', percentage: '--')),
+                    Expanded(child:InfoCard(title: 'Giá trị tồn',value:  reportModel.formatCurrencyDouble(reportModel.residualValue), percentage: '--')),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -172,21 +217,17 @@ class _ReportDashboardState extends State<InventoryAnalysis> {
                   children: [
                     Expanded(
                         flex: 1,
-                        child: InfoCard(title: 'Số sản phẩm đã bán', value:  '17', percentage: '54.55')),
+                        child: InfoCard(title: 'Số sản phẩm đã bán', value:  reportModel.productNumberSold.toString(), percentage: reportModel.productNumberSoldPercent.toString())),
                     const SizedBox(width: 16),
                     Expanded(
                         flex: 1,
-                        child: InfoCard(title: 'Số sản phẩm trung bình/ngày', value: '17',percentage: '54.55',)),
-                    const SizedBox(width: 16),
-                    Expanded(
-                        flex: 1,
-                        child: InfoCard(title: 'Doanh thu', value: '23,810,000 ₫', percentage: '57.68')),
+                        child: InfoCard(title: 'Doanh thu', value: reportModel.formatCurrencyDouble(reportModel.receivedMoney), percentage: reportModel.receivedMoneyPercent.toString())),
                   ],
                 ),
+                // const SizedBox(height: 16),
+                // _buildLineChart(),
                 const SizedBox(height: 16),
-                _buildLineChart(),
-                const SizedBox(height: 16),
-                _build_best_product(),
+                _build_best_product(bestSellingProducts),
               ],
             )
                 : Column(
@@ -207,35 +248,51 @@ class _ReportDashboardState extends State<InventoryAnalysis> {
                       ),
                     ],
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TimeSelection(),
-                      SizedBox(width: 20,),
-                      Text('So sánh với', style: TextStyle(color: AppColors.titleColor, fontSize: 18, fontWeight: FontWeight.bold),),
-                      SizedBox(width: 10,),
-                      TimeSelection(),
-                    ],
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TimeSelection(onDateSelected: _onDateSelected1),
+                        const SizedBox(width: 10,),
+                        const Text('So sánh với', style: TextStyle(color: AppColors.titleColor, fontSize: 18, fontWeight: FontWeight.bold),),
+                        const SizedBox(width: 10,),
+                        TimeSelection(onDateSelected: _onDateSelected2),
+                        const SizedBox(width: 20),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.blueAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            elevation: 2,
+                            side: const BorderSide(color: Colors.blueAccent, width: 1),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          onPressed: () {
+                            _fetchComparisonData();
+                          },
+                          child: const Text("So sánh dữ liệu"),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20,),
                 Row(
                   children: [
                     Expanded(
                         flex: 1,
-                        child: InfoCard(title: 'Số đơn hàng', value:  '11', percentage: '22.22')),
+                        child: InfoCard(title: 'Số đơn hàng', value:  reportModel.filteredOrders1.length.toString(), percentage: reportModel.orderQuantityPercent.toString())),
                     const SizedBox(width: 16),
                     Expanded(
                         flex: 1,
-                        child: InfoCard(title: 'Số đơn hàng trung bình/ngày', value: '13',percentage: '87.71',)),
+                        child: InfoCard(title: 'Số lượng tồn', value: reportModel.inOfStock.toString(), percentage: '--')),
                     const SizedBox(width: 16),
                     Expanded(
                         flex: 1,
-                        child: InfoCard(title: 'Số lượng tồn', value: '2,113', percentage: '--')),
-                    const SizedBox(width: 16),
-                    Expanded(
-                        flex: 1,
-                        child: InfoCard(title: 'Giá trị tồn',value:  '1,400,000 ₫', percentage: '--')),
+                        child: InfoCard(title: 'Giá trị tồn',value:  reportModel.formatCurrencyDouble(reportModel.residualValue), percentage: '--')),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -243,23 +300,19 @@ class _ReportDashboardState extends State<InventoryAnalysis> {
                   children: [
                     Expanded(
                         flex: 1,
-                        child: InfoCard(title: 'Số sản phẩm đã bán', value:  '17', percentage: '54.55')),
+                        child: InfoCard(title: 'Số sản phẩm đã bán', value:  reportModel.productNumberSold.toString(), percentage: reportModel.productNumberSoldPercent.toString())),
                     const SizedBox(width: 16),
                     Expanded(
                         flex: 1,
-                        child: InfoCard(title: 'Số sản phẩm trung bình/ngày', value: '17',percentage: '54.55',)),
-                    const SizedBox(width: 16),
-                    Expanded(
-                        flex: 1,
-                        child: InfoCard(title: 'Doanh thu', value: '23,810,000 ₫', percentage: '57.68')),
+                        child: InfoCard(title: 'Doanh thu', value: reportModel.formatCurrencyDouble(reportModel.receivedMoney), percentage: reportModel.receivedMoneyPercent.toString())),
                   ],
                 ),
                 const SizedBox(height: 20),
                 Row(
                   children: [
-                    Expanded(flex: 1, child: _buildLineChart()),
+                    // Expanded(flex: 1, child: _buildLineChart()),
                     const SizedBox(width: 20),
-                    Expanded(flex: 1, child: _build_best_product()),
+                    Expanded(flex: 1, child: _build_best_product(bestSellingProducts)),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -271,90 +324,70 @@ class _ReportDashboardState extends State<InventoryAnalysis> {
     );
   }
 
-  Widget _buildLegendItem(Color color, String text) {
-    return Row(
-      mainAxisSize: MainAxisSize.min, // Keeps row compact
-      children: [
-        Container(
-          height: 12,
-          width: 12,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2), // Rounded corners
-          ),
-        ),
-        const SizedBox(width: 5),
-        Text(text, style: TextStyle(color: color)),
-      ],
-    );
-  }
+  // Widget _buildLegendItem(Color color, String text) {
+  //   return Row(
+  //     mainAxisSize: MainAxisSize.min, // Keeps row compact
+  //     children: [
+  //       Container(
+  //         height: 12,
+  //         width: 12,
+  //         decoration: BoxDecoration(
+  //           color: color,
+  //           borderRadius: BorderRadius.circular(2), // Rounded corners
+  //         ),
+  //       ),
+  //       const SizedBox(width: 5),
+  //       Text(text, style: TextStyle(color: color)),
+  //     ],
+  //   );
+  // }
+  //
+  // Widget _buildLineChart() {
+  //   return Container(
+  //     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+  //     height: 400,
+  //     width: double.infinity,
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       border: Border.all(color: Colors.black.withOpacity(0.1)),
+  //       borderRadius: BorderRadius.circular(8),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.black.withOpacity(0.1),
+  //           spreadRadius: 2,
+  //           blurRadius: 5,
+  //           offset: const Offset(0, 3),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Column(
+  //       mainAxisSize: MainAxisSize.min,
+  //       children: [
+  //         Expanded(
+  //           child: Line_Chart(
+  //             spots1: ChartDataProvider.generateCurrentDayData(),
+  //             spots2: ChartDataProvider.generateComparisonDayData(),
+  //             check_size: maxWidth,
+  //           ),
+  //         ),
+  //         const SizedBox(height: 8),
+  //         Align(
+  //           alignment: Alignment.center,
+  //           child: Row(
+  //             mainAxisSize: MainAxisSize.min,
+  //             children: [
+  //               _buildLegendItem(Colors.blue, '29/12/2024'),
+  //               const SizedBox(width: 20),
+  //               _buildLegendItem(Colors.green.withOpacity(0.5), '28/12/2024'),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildLineChart() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      height: 400,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.black.withOpacity(0.1)),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
-            child: Line_Chart(
-              spots1: ChartDataProvider.generateCurrentDayData(),
-              spots2: ChartDataProvider.generateComparisonDayData(),
-              check_size: maxWidth,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildLegendItem(Colors.blue, '29/12/2024'),
-                const SizedBox(width: 20),
-                _buildLegendItem(Colors.green.withOpacity(0.5), '28/12/2024'),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPiechart(){
-    return Container(
-      padding: EdgeInsets.all(30),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.black.withOpacity(0.1)),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Pie_Chart(),
-    );
-  }
-
-  Widget _build_best_product(){
+  Widget _build_best_product(List<MapEntry<String, int>> bestSellingProducts){
     return Container(
       padding: const EdgeInsets.all(30),
       height: 420,
@@ -371,27 +404,26 @@ class _ReportDashboardState extends State<InventoryAnalysis> {
           ),
         ],
       ),
-      child: BestProductList(),
+      child: BestProductList(bestSellingSizes: bestSellingProducts),
     );
   }
 }
 
-class ChartDataProvider {
-
-  static List<FlSpot> generateCurrentDayData() {
-    final random = Random();
-    return List.generate(24, (hour) {
-      final value = random.nextInt(10001).toDouble(); // Giá trị từ 0-10,000
-      return FlSpot(hour.toDouble(), value);
-    });
-  }
-
-  // Dữ liệu cho ngày so sánh
-  static List<FlSpot> generateComparisonDayData() {
-    final random = Random();
-    return List.generate(24, (hour) {
-      final value = random.nextInt(10001).toDouble(); // Giá trị từ 0-10,000
-      return FlSpot(hour.toDouble(), value);
-    });
-  }
-}
+// class ChartDataProvider {
+//
+//   static List<FlSpot> generateCurrentDayData() {
+//     final random = Random();
+//     return List.generate(24, (hour) {
+//       final value = random.nextInt(10001).toDouble(); // Giá trị từ 0-10,000
+//       return FlSpot(hour.toDouble(), value);
+//     });
+//   }
+//
+//   static List<FlSpot> generateComparisonDayData() {
+//     final random = Random();
+//     return List.generate(24, (hour) {
+//       final value = random.nextInt(10001).toDouble(); // Giá trị từ 0-10,000
+//       return FlSpot(hour.toDouble(), value);
+//     });
+//   }
+// }

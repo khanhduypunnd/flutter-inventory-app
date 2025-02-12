@@ -5,6 +5,7 @@ import 'employee/employee_management.dart';
 import 'payment/payment.dart';
 import 'role/role.dart';
 
+
 class SettingScreenetting extends StatelessWidget {
   const SettingScreenetting({super.key});
 
@@ -78,15 +79,7 @@ class ResponsiveLayout extends StatelessWidget {
                           buildMenuItem(menuItems[1], context),
                         ],
                       ),
-                      // const SizedBox(width: 16),
-                      // Column(
-                      //   crossAxisAlignment: CrossAxisAlignment.start,
-                      //   children: [
-                      //     buildMenuItem(menuItems[1], context),
-                      //     const SizedBox(height: 16),
-                      //     buildMenuItem(menuItems[3], context),
-                      //   ],
-                      // ),
+
                     ],
                   ),
                 ),
@@ -103,7 +96,6 @@ class ResponsiveLayout extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         child: Row(
-          // crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               padding: const EdgeInsets.all(10),
@@ -177,14 +169,6 @@ final List<MenuItem> menuItems = [
       title: 'Nhân viên',
       suptitle: 'Tạo, phân quyền và quản lý nhân viên',
       icon: Icons.people_alt_outlined),
-  // MenuItem(
-  //     title: 'Vai trò',
-  //     suptitle: 'Tạo, phân quyền và quản lý vai trò',
-  //     icon: Icons.accessibility_new),
-  // MenuItem(
-  //     title: 'Phương thức thanh toán',
-  //     suptitle: 'Quản lý, cấu hình phương thức thanh toán',
-  //     icon: Icons.payment_outlined),
   MenuItem(
       title: 'Tài khoản',
       suptitle: 'Cấu hình tài khoản',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import '../../../shared/core/services/uriApi.dart';
 import '../../../shared/core/theme/colors_app.dart';
 import '../../../data/promotion.dart';
 import 'dart:convert';
@@ -11,6 +12,8 @@ class ListPromotion extends StatefulWidget {
 }
 
 class _ListPromotionState extends State<ListPromotion> {
+  final ApiService uriAPIService = ApiService();
+
   int rowsPerPage = 20;
   int currentPage = 1;
   int totalPromotions = 0;
@@ -34,7 +37,7 @@ class _ListPromotionState extends State<ListPromotion> {
     });
 
     try {
-      final url = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/giftCodes');
+      final url = Uri.parse(uriAPIService.apiUrlGiftCode);
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -118,7 +121,7 @@ class _ListPromotionState extends State<ListPromotion> {
           .toList();
 
       for (String id in selectedIds) {
-        final url = Uri.parse('https://dacntt1-api-server-5uchxlkka-haonguyen9191s-projects.vercel.app/api/giftCodes/$id');
+        final url = Uri.parse('${uriAPIService.apiUrlGiftCode}/$id');
         final response = await http.delete(url);
 
         if (response.statusCode != 200) {

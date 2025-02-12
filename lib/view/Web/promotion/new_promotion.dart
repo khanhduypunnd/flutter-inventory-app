@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../shared/core/services/uriApi.dart';
 import '../../icon_pictures.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -14,6 +15,8 @@ class NewPromotion extends StatefulWidget {
 }
 
 class _PromotionScreenState extends State<NewPromotion> {
+  final ApiService uriAPIService = ApiService();
+
   final _promotionCodeController = TextEditingController();
   final _descriptionController = TextEditingController();
   final TextEditingController _valueController = TextEditingController();
@@ -130,7 +133,7 @@ class _PromotionScreenState extends State<NewPromotion> {
         print('Dữ liệu JSON: ${json.encode(promotionData)}');
       }
 
-      final url = Uri.parse('https://dacntt1-api-server-4rtx90o6z-haonguyen9191s-projects.vercel.app/api/giftCodes');
+      final url = Uri.parse(uriAPIService.apiUrlGiftCode);
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},

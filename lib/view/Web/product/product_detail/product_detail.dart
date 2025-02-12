@@ -6,21 +6,6 @@ import 'widget/variants.dart';
 import 'widget/add_image.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const ProductDetailView(),
-    );
-  }
-}
 
 class ProductDetailView extends StatefulWidget {
   const ProductDetailView({super.key});
