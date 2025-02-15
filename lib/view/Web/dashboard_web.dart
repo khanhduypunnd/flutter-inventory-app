@@ -1,54 +1,36 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'dashboard/dashboard.dart';
-import 'order/list_order.dart';
-import 'product/list_product/list_product.dart';
-import 'product/new_product/new_product.dart';
-import 'customer/list_customer/list_customer.dart';
-import 'inventory/inventory_overall/inventory_overall.dart';
-import 'inventory/adjust_inventory/adjust_inventory.dart';
-import 'inventory/adjust_history/adjust_inventory_history.dart';
-import 'promotion/new_promotion.dart';
-import 'promotion/list_promotion.dart';
-import 'report/analysis.dart';
-import 'setting/setting_screen.dart';
-import 'drawer.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../view_model/login.dart';
+import 'drawer/drawer.dart';
 import '../../shared/core/theme/colors_app.dart';
 
-
-class MyApp extends StatelessWidget {
-  final GlobalKey<NavigatorState> navigatorKey;
-  const MyApp({super.key, required this.navigatorKey});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      debugShowCheckedModeBanner: false,
-      home: DashboardWeb(
-        navigatorKey: navigatorKey,
-      ),
-    );
-  }
-}
-
-class DashboardWeb extends StatefulWidget {
-  // final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+class InventoryWeb extends StatefulWidget {
+  final Widget child;
+  final Map<String, dynamic>? staffData;
 
   final GlobalKey<NavigatorState> navigatorKey;
-  const DashboardWeb({super.key, required this.navigatorKey});
+  const InventoryWeb(
+      {super.key,
+      required this.navigatorKey,
+      required this.child,
+      this.staffData});
 
   @override
-  _DashboardWebState createState() => _DashboardWebState();
+  _InventoryWebState createState() => _InventoryWebState();
 }
 
-class _DashboardWebState extends State<DashboardWeb> {
+class _InventoryWebState extends State<InventoryWeb> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String _selectedPage = '';
   late double maxWidth;
   bool _isDrawerOpen = true;
 
   final Map<String, bool> _expandedTiles = {};
+  Map<String, dynamic>? staffData;
+  List<int>? roleDetail;
 
   @override
   void initState() {
@@ -58,24 +40,42 @@ class _DashboardWebState extends State<DashboardWeb> {
   }
 
   @override
-  void didChangeDependencies() {
+  Future<void> didChangeDependencies() async {
     // TODO: implement didChangeDependencies
     super.didChangeDependencies();
     maxWidth = MediaQuery.of(context).size.width;
+
+    final extra = GoRouterState.of(context).extra;
+    if (extra != null && extra is Map<String, dynamic>) {
+      staffData = extra;
+      roleDetail = List<int>.from(extra['role_detail'] ?? []);
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    if (token == null) {
+      context.go('/login');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    bool isScreenWide =  maxWidth > 800;
+    bool isScreenWide = maxWidth > 800;
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text( _selectedPage.isEmpty ? "Tổng quan" : _selectedPage,),
+        title: const Text(
+          "Hype Inventory",
+          style: TextStyle(
+              fontSize: 18,
+              color: AppColors.titleColor,
+              fontWeight: FontWeight.bold),
+        ),
         backgroundColor: AppColors.backgroundColor,
         leading: isScreenWide
             ? null
-            :
-            IconButton(
+            : IconButton(
                 icon: const Icon(Icons.menu),
                 onPressed: () {
                   final scaffoldState = _scaffoldKey.currentState;
@@ -85,21 +85,34 @@ class _DashboardWebState extends State<DashboardWeb> {
                     } else {
                       scaffoldState.openDrawer();
                     }
-                  } else {
-                    print("Scaffold state is null");
                   }
-                  setState(() {
-                    //
-                  });
+                  setState(() {});
                 },
               ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.redAccent),
+            onPressed: () {
+              final loginModel =
+                  Provider.of<LoginModel>(context, listen: false);
+              loginModel.logout(context);
+            },
+          ),
+        ],
       ),
-      drawer: isScreenWide ? null : Drawer(
-        child: Container(
-          color: Colors.white,
-          child: _buildDrawer(isScreenWide),
-        ),
-      ),
+      drawer: isScreenWide
+          ? null
+          : CustomDrawer(
+              selectedPage: _selectedPage,
+              onPageSelected: (route) {
+                setState(() {
+                  _selectedPage = route;
+                });
+                context.go(route, extra: staffData);
+              },
+              context: context,
+              roleDetail: roleDetail,
+            ),
       body: Row(
         children: [
           if (isScreenWide)
@@ -109,19 +122,30 @@ class _DashboardWebState extends State<DashboardWeb> {
               child: _buildDrawer(isScreenWide),
             ),
           Expanded(
-            child: Navigator(
-              key: widget.navigatorKey,
-              onGenerateRoute: (RouteSettings settings) {
-                return MaterialPageRoute(
-                  builder: (context) => _buildPage(_selectedPage),
-                );
-              },
-            ),
+            child: widget.child,
           ),
         ],
       ),
     );
   }
+
+  final Map<String, String> _pageTitles = {
+    '/dashboard': "Tổng quan",
+    '/sale': "Bán hàng",
+    '/orderhistory': "Tất cả đơn hàng",
+    '/onlineorders': "Đơn hàng website",
+    '/salesreport': "Báo cáo bán hàng",
+    '/products': "Danh sách sản phẩm",
+    '/new_products': "Thêm sản phẩm mới",
+    '/customers': "Khách hàng",
+    '/adjust_overview': "Chi tiết tồn kho",
+    '/new_adjust': "Phiếu điều chỉnh",
+    '/adjusts': "Lịch sử điều chỉnh",
+    '/promotions': "Tất cả khuyến mãi",
+    '/new_promotion': "Khuyến mãi mới",
+    '/reports': "Bảng phân tích",
+    '/setting': "Cấu hình",
+  };
 
   Widget _buildDrawer(bool isScreenWide) {
     return Column(
@@ -171,6 +195,7 @@ class _DashboardWebState extends State<DashboardWeb> {
                     if (!isScreenWide) {
                       Navigator.pop(context);
                     }
+                    context.go('/dashboard', extra: staffData);
                   },
                 ),
               ),
@@ -203,59 +228,71 @@ class _DashboardWebState extends State<DashboardWeb> {
                     });
                   },
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 3.0, horizontal: 3.0),
-                        decoration: BoxDecoration(
-                          color: _selectedPage == 'Đơn hàng > Tất cả đơn hàng'
-                              ? Colors.white
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow:
-                              _selectedPage == 'Đơn hàng > Tất cả đơn hàng'
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.3),
-                                        blurRadius: 2,
-                                        spreadRadius: 1,
-                                        offset: const Offset(0, 2),
-                                      )
-                                    ]
-                                  : [],
-                        ),
-                        child: ListTile(
-                          leading: const Visibility(visible: false, child: Icon(Icons.pending),
+                    if (roleDetail == null ||
+                        roleDetail!.isEmpty ||
+                        roleDetail?[1] != 2)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 3.0, horizontal: 3.0),
+                          decoration: BoxDecoration(
+                            color: _selectedPage == 'Đơn hàng > Tất cả đơn hàng'
+                                ? Colors.white
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow:
+                                _selectedPage == 'Đơn hàng > Tất cả đơn hàng'
+                                    ? [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.3),
+                                          blurRadius: 2,
+                                          spreadRadius: 1,
+                                          offset: const Offset(0, 2),
+                                        )
+                                      ]
+                                    : [],
                           ),
-                          title: Text(
-                            'Tất cả đơn hàng',
-                            style: TextStyle(
-                              color:
-                                  _selectedPage == 'Đơn hàng > Tất cả đơn hàng' ? Colors.black : Colors.black54,
-                              fontWeight:
-                                  _selectedPage == 'Đơn hàng > Tất cả đơn hàng' ? FontWeight.bold : FontWeight.normal,
+                          child: ListTile(
+                            leading: const Visibility(
+                              visible: false,
+                              child: Icon(Icons.pending),
                             ),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedPage = 'Đơn hàng > Tất cả đơn hàng';
-                            });
-                            if (isScreenWide) {
+                            title: Text(
+                              'Tất cả đơn hàng',
+                              style: TextStyle(
+                                color: _selectedPage ==
+                                        'Đơn hàng > Tất cả đơn hàng'
+                                    ? Colors.black
+                                    : Colors.black54,
+                                fontWeight: _selectedPage ==
+                                        'Đơn hàng > Tất cả đơn hàng'
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                            onTap: () {
                               setState(() {
-                                _expandedTiles['Đơn hàng'] = false;
+                                _selectedPage = 'Đơn hàng > Tất cả đơn hàng';
                               });
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
+                              if (isScreenWide) {
+                                setState(() {
+                                  _expandedTiles['Đơn hàng'] = false;
+                                });
+                              } else {
+                                Navigator.pop(context);
+                              }
+                              context.go('/orders', extra: staffData);
+                            },
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
 
               // San pham
+
               Theme(
                 data: Theme.of(context)
                     .copyWith(dividerColor: Colors.transparent),
@@ -281,131 +318,144 @@ class _DashboardWebState extends State<DashboardWeb> {
                     });
                   },
                   children: [
-                    ClipRRect(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 3.0, horizontal: 3.0),
-                        child: ListTile(
-                          leading: const Visibility(
-                            visible: false,
-                            child: Icon(Icons.inventory),
-                          ),
-                          title: Text(
-                            'Tất cả sản phẩm',
-                            style: TextStyle(
-                              color:
-                                  _selectedPage == 'Sản phẩm > Tất cả sản phẩm'
-                                      ? Colors.black
-                                      : Colors.black54,
-                              fontWeight:
-                                  _selectedPage == 'Sản phẩm > Tất cả sản phẩm'
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
+                    if (roleDetail == null ||
+                        roleDetail!.isEmpty ||
+                        roleDetail?[2] != 2)
+                      ClipRRect(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 3.0, horizontal: 3.0),
+                          child: ListTile(
+                            leading: const Visibility(
+                              visible: false,
+                              child: Icon(Icons.inventory),
                             ),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedPage = 'Sản phẩm > Tất cả sản phẩm';
-                            });
-                            if (isScreenWide) {
+                            title: Text(
+                              'Tất cả sản phẩm',
+                              style: TextStyle(
+                                color: _selectedPage ==
+                                        'Sản phẩm > Tất cả sản phẩm'
+                                    ? Colors.black
+                                    : Colors.black54,
+                                fontWeight: _selectedPage ==
+                                        'Sản phẩm > Tất cả sản phẩm'
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                            onTap: () {
                               setState(() {
-                                _expandedTiles['Sản phẩm > Tất cả sản phẩm'] = false;
+                                _selectedPage = 'Sản phẩm > Tất cả sản phẩm';
                               });
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
+                              if (isScreenWide) {
+                                setState(() {
+                                  _expandedTiles['Sản phẩm > Tất cả sản phẩm'] =
+                                      false;
+                                });
+                              } else {
+                                Navigator.pop(context);
+                              }
+                              context.go('/products', extra: staffData);
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    ClipRRect(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 3.0, horizontal: 3.0),
-                        child: ListTile(
-                          leading: const Visibility(
-                            visible: false,
-                            child: Icon(Icons.add),
-                          ),
-                          title: Text(
-                            'Sản phẩm mới',
-                            style: TextStyle(
-                              color: _selectedPage == 'Sản phẩm > Sản phẩm mới'
-                                  ? Colors.black
-                                  : Colors.black54,
-                              fontWeight:
-                                  _selectedPage == 'Sản phẩm > Sản phẩm mới'
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
+                    if (roleDetail == null ||
+                        roleDetail!.isEmpty ||
+                        roleDetail?[3] != 2)
+                      ClipRRect(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 3.0, horizontal: 3.0),
+                          child: ListTile(
+                            leading: const Visibility(
+                              visible: false,
+                              child: Icon(Icons.add),
                             ),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedPage = 'Sản phẩm > Sản phẩm mới';
-                            });
-                            if (isScreenWide) {
+                            title: Text(
+                              'Sản phẩm mới',
+                              style: TextStyle(
+                                color:
+                                    _selectedPage == 'Sản phẩm > Sản phẩm mới'
+                                        ? Colors.black
+                                        : Colors.black54,
+                                fontWeight:
+                                    _selectedPage == 'Sản phẩm > Sản phẩm mới'
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                              ),
+                            ),
+                            onTap: () {
                               setState(() {
-                                _isDrawerOpen = false;
+                                _selectedPage = 'Sản phẩm > Sản phẩm mới';
                               });
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
+                              if (isScreenWide) {
+                                setState(() {
+                                  _isDrawerOpen = false;
+                                });
+                              } else {
+                                Navigator.pop(context);
+                              }
+                              context.go('/new_products', extra: staffData);
+                            },
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
-
-              Container(
-                decoration: BoxDecoration(
-                  color: _selectedPage == 'Khách hàng'
-                      ? Colors.white
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: _selectedPage == 'Khách hàng'
-                      ? [
-                          const BoxShadow(
-                            color: Colors.black45,
-                            blurRadius: 2,
-                            offset: Offset(0, 2),
-                          )
-                        ]
-                      : [],
-                ),
-                child: ListTile(
-                  leading: Icon(
-                    Icons.people_alt_outlined,
+              if (roleDetail == null ||
+                  roleDetail!.isEmpty ||
+                  roleDetail?[4] != 2)
+                Container(
+                  decoration: BoxDecoration(
                     color: _selectedPage == 'Khách hàng'
-                        ? Colors.blueAccent
-                        : Colors.black,
+                        ? Colors.white
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: _selectedPage == 'Khách hàng'
+                        ? [
+                            const BoxShadow(
+                              color: Colors.black45,
+                              blurRadius: 2,
+                              offset: Offset(0, 2),
+                            )
+                          ]
+                        : [],
                   ),
-                  title: Text(
-                    'Khách hàng',
-                    style: TextStyle(
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.people_alt_outlined,
                       color: _selectedPage == 'Khách hàng'
-                          ? Colors.black
+                          ? Colors.blueAccent
                           : Colors.black,
-                      fontWeight: _selectedPage == 'Khách hàng'
-                          ? FontWeight.bold
-                          : FontWeight.normal,
                     ),
-                  ),
-                  onTap: () {
-                    setState(() {
-                      _selectedPage = 'Khách hàng';
-                    });
-                    if (isScreenWide) {
+                    title: Text(
+                      'Khách hàng',
+                      style: TextStyle(
+                        color: _selectedPage == 'Khách hàng'
+                            ? Colors.black
+                            : Colors.black,
+                        fontWeight: _selectedPage == 'Khách hàng'
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    onTap: () {
                       setState(() {
-                        _isDrawerOpen = false;
+                        _selectedPage = 'Khách hàng';
                       });
-                    } else {
-                      Navigator.pop(context);
-                    }
-                  },
+                      if (isScreenWide) {
+                        setState(() {
+                          _isDrawerOpen = false;
+                        });
+                      } else {
+                        Navigator.pop(context);
+                      }
+                      context.go('/customers', extra: staffData);
+                    },
+                  ),
                 ),
-              ),
 
               //Nhap va xuat
               Theme(
@@ -428,119 +478,131 @@ class _DashboardWebState extends State<DashboardWeb> {
                   ),
                   initiallyExpanded: _selectedPage.contains('Quản lý tồn kho'),
                   children: [
-                    ClipRRect(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 3.0, horizontal: 3.0),
-                        child: ListTile(
-                          leading: const Visibility(
-                            visible: false,
-                            child: Icon(Icons.add),
-                          ),
-                          title: Text(
-                            'Chi tiết tồn kho',
-                            style: TextStyle(
-                              color: _selectedPage ==
-                                      'Quản lý tồn kho > Chi tiết tồn kho'
-                                  ? Colors.black
-                                  : Colors.black54,
-                              fontWeight: _selectedPage ==
-                                      'Quản lý tồn kho > Chi tiết tồn kho'
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
+                    if (roleDetail == null ||
+                        roleDetail!.isEmpty ||
+                        roleDetail?[5] != 2)
+                      ClipRRect(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 3.0, horizontal: 3.0),
+                          child: ListTile(
+                            leading: const Visibility(
+                              visible: false,
+                              child: Icon(Icons.add),
                             ),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedPage =
-                                  'Quản lý tồn kho > Chi tiết tồn kho';
-                            });
-                            if (isScreenWide) {
+                            title: Text(
+                              'Chi tiết tồn kho',
+                              style: TextStyle(
+                                color: _selectedPage ==
+                                        'Quản lý tồn kho > Chi tiết tồn kho'
+                                    ? Colors.black
+                                    : Colors.black54,
+                                fontWeight: _selectedPage ==
+                                        'Quản lý tồn kho > Chi tiết tồn kho'
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                            onTap: () {
                               setState(() {
-                                _isDrawerOpen = false;
+                                _selectedPage =
+                                    'Quản lý tồn kho > Chi tiết tồn kho';
                               });
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
+                              if (isScreenWide) {
+                                setState(() {
+                                  _isDrawerOpen = false;
+                                });
+                              } else {
+                                Navigator.pop(context);
+                              }
+                              context.go('/adjust_overview', extra: staffData);
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    ClipRRect(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 3.0, horizontal: 3.0),
-                        child: ListTile(
-                          leading: const Visibility(
-                            visible: false,
-                            child: Icon(Icons.add),
-                          ),
-                          title: Text(
-                            'Phiếu điều chỉnh',
-                            style: TextStyle(
-                              color: _selectedPage ==
-                                      'Quản lý tồn kho > Phiếu điều chỉnh'
-                                  ? Colors.black
-                                  : Colors.black54,
-                              fontWeight: _selectedPage ==
-                                      'Quản lý tồn kho > Phiếu điều chỉnh'
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
+                    if (roleDetail == null ||
+                        roleDetail!.isEmpty ||
+                        roleDetail?[6] != 2)
+                      ClipRRect(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 3.0, horizontal: 3.0),
+                          child: ListTile(
+                            leading: const Visibility(
+                              visible: false,
+                              child: Icon(Icons.add),
                             ),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedPage =
-                                  'Quản lý tồn kho > Phiếu điều chỉnh';
-                            });
-                            if (isScreenWide) {
+                            title: Text(
+                              'Phiếu điều chỉnh',
+                              style: TextStyle(
+                                color: _selectedPage ==
+                                        'Quản lý tồn kho > Phiếu điều chỉnh'
+                                    ? Colors.black
+                                    : Colors.black54,
+                                fontWeight: _selectedPage ==
+                                        'Quản lý tồn kho > Phiếu điều chỉnh'
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                            onTap: () {
                               setState(() {
-                                _isDrawerOpen = false;
+                                _selectedPage =
+                                    'Quản lý tồn kho > Phiếu điều chỉnh';
                               });
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
+                              if (isScreenWide) {
+                                setState(() {
+                                  _isDrawerOpen = false;
+                                });
+                              } else {
+                                Navigator.pop(context);
+                              }
+                              context.go('/new_adjust', extra: staffData);
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    ClipRRect(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 3.0, horizontal: 3.0),
-                        child: ListTile(
-                          leading: const Visibility(
-                            visible: false,
-                            child: Icon(Icons.add),
-                          ),
-                          title: Text(
-                            'Lịch sử',
-                            style: TextStyle(
-                              color:
-                                  _selectedPage == 'Quản lý tồn kho > Lịch sử'
-                                      ? Colors.black
-                                      : Colors.black54,
-                              fontWeight:
-                                  _selectedPage == 'Quản lý tồn kho > Lịch sử'
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
+                    if (roleDetail == null ||
+                        roleDetail!.isEmpty ||
+                        roleDetail?[7] != 2)
+                      ClipRRect(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 3.0, horizontal: 3.0),
+                          child: ListTile(
+                            leading: const Visibility(
+                              visible: false,
+                              child: Icon(Icons.add),
                             ),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedPage = 'Quản lý tồn kho > Lịch sử';
-                            });
-                            if (isScreenWide) {
+                            title: Text(
+                              'Lịch sử',
+                              style: TextStyle(
+                                color:
+                                    _selectedPage == 'Quản lý tồn kho > Lịch sử'
+                                        ? Colors.black
+                                        : Colors.black54,
+                                fontWeight:
+                                    _selectedPage == 'Quản lý tồn kho > Lịch sử'
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                              ),
+                            ),
+                            onTap: () {
                               setState(() {
-                                _isDrawerOpen = false;
+                                _selectedPage = 'Quản lý tồn kho > Lịch sử';
                               });
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
+                              if (isScreenWide) {
+                                setState(() {
+                                  _isDrawerOpen = false;
+                                });
+                              } else {
+                                Navigator.pop(context);
+                              }
+                              context.go('/adjusts', extra: staffData);
+                            },
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -566,80 +628,89 @@ class _DashboardWebState extends State<DashboardWeb> {
                   ),
                   initiallyExpanded: _selectedPage.contains('Khuyến mãi'),
                   children: [
-                    ClipRRect(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 3.0, horizontal: 3.0),
-                        child: ListTile(
-                          leading: const Visibility(
-                            visible: false,
-                            child: Icon(Icons.add),
-                          ),
-                          title: Text(
-                            'Tất cả khuyến mãi',
-                            style: TextStyle(
-                              color: _selectedPage ==
-                                      'Khuyến mãi > Tất cả khuyến mãi'
-                                  ? Colors.black
-                                  : Colors.black54,
-                              fontWeight: _selectedPage ==
-                                      'Khuyến mãi > Tất cả khuyến mãi'
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
+                    if (roleDetail == null ||
+                        roleDetail!.isEmpty ||
+                        roleDetail?[8] != 2)
+                      ClipRRect(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 3.0, horizontal: 3.0),
+                          child: ListTile(
+                            leading: const Visibility(
+                              visible: false,
+                              child: Icon(Icons.add),
                             ),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedPage = 'Khuyến mãi > Tất cả khuyến mãi';
-                            });
-                            if (isScreenWide) {
+                            title: Text(
+                              'Tất cả khuyến mãi',
+                              style: TextStyle(
+                                color: _selectedPage ==
+                                        'Khuyến mãi > Tất cả khuyến mãi'
+                                    ? Colors.black
+                                    : Colors.black54,
+                                fontWeight: _selectedPage ==
+                                        'Khuyến mãi > Tất cả khuyến mãi'
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                            onTap: () {
                               setState(() {
-                                _isDrawerOpen = false;
+                                _selectedPage =
+                                    'Khuyến mãi > Tất cả khuyến mãi';
                               });
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
+                              if (isScreenWide) {
+                                setState(() {
+                                  _isDrawerOpen = false;
+                                });
+                              } else {
+                                Navigator.pop(context);
+                              }
+                              context.go('/promotions', extra: staffData);
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    ClipRRect(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 3.0, horizontal: 3.0),
-                        child: ListTile(
-                          leading: const Visibility(
-                            visible: false,
-                            child: Icon(Icons.inventory),
-                          ),
-                          title: Text(
-                            'Khuyến mãi mới',
-                            style: TextStyle(
-                              color:
-                                  _selectedPage == 'Khuyến mãi > Khuyến mãi mới'
-                                      ? Colors.black
-                                      : Colors.black54,
-                              fontWeight:
-                                  _selectedPage == 'Khuyến mãi > Khuyến mãi mới'
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
+                    if (roleDetail == null ||
+                        roleDetail!.isEmpty ||
+                        roleDetail?[9] != 2)
+                      ClipRRect(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 3.0, horizontal: 3.0),
+                          child: ListTile(
+                            leading: const Visibility(
+                              visible: false,
+                              child: Icon(Icons.inventory),
                             ),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedPage = 'Khuyến mãi > Khuyến mãi mới';
-                            });
-                            if (isScreenWide) {
+                            title: Text(
+                              'Khuyến mãi mới',
+                              style: TextStyle(
+                                color: _selectedPage ==
+                                        'Khuyến mãi > Khuyến mãi mới'
+                                    ? Colors.black
+                                    : Colors.black54,
+                                fontWeight: _selectedPage ==
+                                        'Khuyến mãi > Khuyến mãi mới'
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                            onTap: () {
                               setState(() {
-                                _isDrawerOpen = false;
+                                _selectedPage = 'Khuyến mãi > Khuyến mãi mới';
                               });
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
+                              if (isScreenWide) {
+                                setState(() {
+                                  _isDrawerOpen = false;
+                                });
+                              } else {
+                                Navigator.pop(context);
+                              }
+                              context.go('/new_promotion', extra: staffData);
+                            },
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -665,42 +736,47 @@ class _DashboardWebState extends State<DashboardWeb> {
                   ),
                   initiallyExpanded: _selectedPage.contains('Báo cáo'),
                   children: [
-                    ClipRRect(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 3.0, horizontal: 3.0),
-                        child: ListTile(
-                          leading: const Visibility(
-                            visible: false,
-                            child: Icon(Icons.add),
-                          ),
-                          title: Text(
-                            'Bảng phân tích',
-                            style: TextStyle(
-                              color: _selectedPage == 'Báo cáo > Bảng phân tích'
-                                  ? Colors.black
-                                  : Colors.black54,
-                              fontWeight:
-                                  _selectedPage == 'Báo cáo > Bảng phân tích'
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
+                    if (roleDetail == null ||
+                        roleDetail!.isEmpty ||
+                        roleDetail?[10] != 2)
+                      ClipRRect(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 3.0, horizontal: 3.0),
+                          child: ListTile(
+                            leading: const Visibility(
+                              visible: false,
+                              child: Icon(Icons.add),
                             ),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedPage = 'Báo cáo > Bảng phân tích';
-                            });
-                            if (isScreenWide) {
+                            title: Text(
+                              'Bảng phân tích',
+                              style: TextStyle(
+                                color:
+                                    _selectedPage == 'Báo cáo > Bảng phân tích'
+                                        ? Colors.black
+                                        : Colors.black54,
+                                fontWeight:
+                                    _selectedPage == 'Báo cáo > Bảng phân tích'
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                              ),
+                            ),
+                            onTap: () {
                               setState(() {
-                                _isDrawerOpen = false;
+                                _selectedPage = 'Báo cáo > Bảng phân tích';
                               });
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
+                              if (isScreenWide) {
+                                setState(() {
+                                  _isDrawerOpen = false;
+                                });
+                              } else {
+                                Navigator.pop(context);
+                              }
+                              context.go('/reports', extra: staffData);
+                            },
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -732,85 +808,10 @@ class _DashboardWebState extends State<DashboardWeb> {
             } else {
               Navigator.pop(context);
             }
+            context.go('/setting', extra: staffData);
           },
         ),
       ],
     );
-  }
-
-  // void _onPageSelected(String page) {
-  //   Navigator.pop(context);
-  //   if (kDebugMode) {
-  //     print("Đang chọn trang: $page");
-  //   }
-  //   setState(() {
-  //     _selectedPage = page;
-  //   });
-  //   widget.navigatorKey.currentState!.pushAndRemoveUntil(
-  //     MaterialPageRoute(builder: (context) => _buildPage(page)),
-  //     (Route<dynamic> route) =>
-  //         false,
-  //   );
-  // }
-
-  void _onPageSelected(String page) {
-
-    if (MediaQuery.of(context).size.width > 800) {
-      Navigator.push(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) {
-            return _buildPage(page);
-          },
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.easeInOut;
-
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            var offsetAnimation = animation.drive(tween);
-
-            return SlideTransition(position: offsetAnimation, child: child);
-          },
-        ),
-      );
-    } else {
-      setState(() {
-        _selectedPage = page;
-      });
-      Navigator.pop(context);
-    }
-  }
-
-  Widget _buildPage(String page) {
-
-    switch (page) {
-      case 'Tổng quan':
-        return DashboardPage();
-      case 'Đơn hàng > Tất cả đơn hàng':
-        return ListOrder();
-      case 'Sản phẩm > Tất cả sản phẩm':
-        return ListProduct();
-      case 'Sản phẩm > Sản phẩm mới':
-        return const NewProduct();
-      case 'Khách hàng':
-        return CustomerList();
-      case 'Quản lý tồn kho > Chi tiết tồn kho':
-        return InventoryOverall();
-      case 'Quản lý tồn kho > Phiếu điều chỉnh':
-        return AdjustInventory();
-      case 'Quản lý tồn kho > Lịch sử':
-        return AdjustInventoryHistory();
-      case 'Khuyến mãi > Tất cả khuyến mãi':
-        return ListPromotion();
-      case 'Khuyến mãi > Khuyến mãi mới':
-        return NewPromotion();
-      case 'Báo cáo > Bảng phân tích':
-        return const Analysis();
-      case 'Cấu hình':
-        return const SettingScreenetting();
-      default:
-        return const Center(child: Text("Màn hình không tồn tại"));
-    }
   }
 }

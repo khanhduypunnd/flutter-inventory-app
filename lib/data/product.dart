@@ -33,6 +33,7 @@ class Product {
     this.totalReviews = 0,
   });
 
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

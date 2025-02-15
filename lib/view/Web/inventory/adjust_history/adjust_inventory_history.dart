@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../shared/core/services/uriApi.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 import 'adjust_inven_detail.dart';
@@ -7,7 +8,9 @@ import 'package:http/http.dart' as http;
 import '../../../../data/gan.dart';
 
 class AdjustInventoryHistory extends StatefulWidget {
-  const AdjustInventoryHistory({super.key});
+  final Map<String, dynamic>? staffData;
+
+  const AdjustInventoryHistory({super.key, this.staffData});
 
   @override
   State<AdjustInventoryHistory> createState() => _AdjustInventoryHistory();
@@ -192,51 +195,21 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                                                 Text(adjustment["ganId"] ??
                                                     'N/A'),
                                                 onTap: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          AdjustInvenDetail(
-                                                        ganData: adjustment,
-                                                        ganDetails: adjustment[
-                                                            "details"],
-                                                      ),
-                                                    ),
-                                                  );
+                                                  context.go('/adjust_detail/${adjustment["ganId"]}', extra: adjustment);
                                                 },
                                               ),
                                               DataCell(
                                                 Text(
                                                     adjustment["sId"] ?? 'N/A'),
                                                 onTap: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          AdjustInvenDetail(
-                                                        ganData: adjustment,
-                                                        ganDetails: adjustment[
-                                                            "details"],
-                                                      ),
-                                                    ),
-                                                  );
+                                                  context.go('/adjust_detail/${adjustment["ganId"]}', extra: adjustment);
                                                 },
                                               ),
                                               DataCell(
                                                 Text(adjustment["date"] ??
                                                     'N/A'),
                                                 onTap: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          AdjustInvenDetail(
-                                                        ganData: adjustment,
-                                                        ganDetails: adjustment[
-                                                            "details"],
-                                                      ),
-                                                    ),
-                                                  );
+                                                  context.go('/adjust_detail/${adjustment["ganId"]}', extra: adjustment);
                                                 },
                                               ),
                                               DataCell(
@@ -244,17 +217,7 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                                                         "increasedQuantity"]
                                                     .toString()),
                                                 onTap: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          AdjustInvenDetail(
-                                                        ganData: adjustment,
-                                                        ganDetails: adjustment[
-                                                            "details"],
-                                                      ),
-                                                    ),
-                                                  );
+                                                  context.go('/adjust_detail/${adjustment["ganId"]}', extra: adjustment);
                                                 },
                                               ),
                                               DataCell(
@@ -262,17 +225,7 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                                                         "decreasedQuantity"]
                                                     .toString()),
                                                 onTap: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          AdjustInvenDetail(
-                                                        ganData: adjustment,
-                                                        ganDetails: adjustment[
-                                                            "details"],
-                                                      ),
-                                                    ),
-                                                  );
+                                                  context.go('/adjust_detail/${adjustment["ganId"]}', extra: adjustment);
                                                 },
                                               ),
                                             ],

@@ -9,7 +9,7 @@ class Variants extends StatefulWidget {
 
 class _VariantsState extends State<Variants> {
   final List<Map<String, dynamic>> variants = [];
-  bool isAdding = false; // Hiển thị form nhập nếu là true
+  bool isAdding = false;
   final TextEditingController sizeController = TextEditingController();
   final TextEditingController basePriceController = TextEditingController();
   final TextEditingController sellingPriceController = TextEditingController();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../view_model/dashboard.dart';
 import 'widget/kpi_card.dart';
@@ -10,7 +11,8 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-
+  Map<String, dynamic>? staffData;
+  List<int>? roleDetail;
   @override
   void initState() {
     // TODO: implement initState
@@ -19,6 +21,18 @@ class _DashboardPageState extends State<DashboardPage> {
       Provider.of<DashboardModel>(context, listen: false).fetchOrders();
       Provider.of<DashboardModel>(context, listen: false).fetchProducts();
     });
+  }
+
+  @override
+  Future<void> didChangeDependencies() async {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+
+    final extra = GoRouterState.of(context).extra;
+    if (extra != null && extra is Map<String, dynamic>) {
+      staffData = extra;
+      roleDetail = List<int>.from(extra['role_detail'] ?? []);
+    }
   }
 
   @override

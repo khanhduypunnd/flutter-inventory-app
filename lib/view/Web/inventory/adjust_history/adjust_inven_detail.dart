@@ -8,43 +8,19 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/scheduler.dart';
 
-class AdjustInvenDetail extends StatelessWidget {
+class AdjustInventoryDetail extends StatefulWidget {
   final Map<String, dynamic> ganData;
   final List<Map<String, dynamic>> ganDetails;
+  final Map<String, dynamic>? staffData;
 
-  const AdjustInvenDetail({
-    Key? key,
-    required this.ganData,
-    required this.ganDetails,
-  }) : super(key: key);
+
+  const AdjustInventoryDetail({super.key, required this.ganData, required this.ganDetails, this.staffData, });
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: InventoryScreen(
-        ganData: ganData,
-        ganDetails: ganDetails,
-      ),
-    );
-  }
+  State<AdjustInventoryDetail> createState() => _AdjustInventoryDetailState();
 }
 
-class InventoryScreen extends StatefulWidget {
-  final Map<String, dynamic> ganData;
-  final List<Map<String, dynamic>> ganDetails;
-
-  const InventoryScreen({
-    Key? key,
-    required this.ganData,
-    required this.ganDetails,
-  }) : super(key: key);
-
-  @override
-  State<InventoryScreen> createState() => _InventoryScreenState();
-}
-
-class _InventoryScreenState extends State<InventoryScreen> {
+class _AdjustInventoryDetailState extends State<AdjustInventoryDetail> {
   final ApiService uriAPIService = ApiService();
 
   late String warehouseChange;
@@ -65,7 +41,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
     increaseAmount = 0;
     decreaseAmount = 0;
 
-    // Tính toán số lượng tăng và giảm
     for (var product in widget.ganDetails) {
       final int oldQuantity = product['oldQuantity'] ?? 0;
       final int newQuantity = product['newQuantity'] ?? 0;

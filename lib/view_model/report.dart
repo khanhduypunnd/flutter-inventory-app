@@ -90,6 +90,10 @@ class ReportModel extends ChangeNotifier {
     String apiUrl =
         uriAPIService.apiUrlOrder;
 
+    print(' ngay so sanh: ${start2.toString()}');
+    print(' ngay so sanh: ${end2.toString()}');
+
+
     try {
       final response = await http.get(Uri.parse(apiUrl));
       if (response.statusCode == 200) {
@@ -103,9 +107,11 @@ class ReportModel extends ChangeNotifier {
         }).toList();
 
         filteredOrders2 = allOrders.where((order) {
-          return order.date.isAfter(start2.subtract(Duration(days: 1))) &&
-              order.date.isBefore(end2.add(Duration(days: 1)));
+          return order.date.isAfter(start2) && order.date.isBefore(end2);
         }).toList();
+
+
+        print(filteredOrders2);
 
         orderQuantityPercent = calculatePercentageChangeInt(
             filteredOrders1.length, filteredOrders2.length);

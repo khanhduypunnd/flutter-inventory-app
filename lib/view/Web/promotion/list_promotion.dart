@@ -7,6 +7,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ListPromotion extends StatefulWidget {
+  final Map<String, dynamic>? staffData;
+
+  const ListPromotion({super.key, this.staffData});
+
   @override
   State<ListPromotion> createState() => _ListPromotionState();
 }

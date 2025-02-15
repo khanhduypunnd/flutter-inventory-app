@@ -7,6 +7,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class CustomerList extends StatefulWidget {
+  final Map<String, dynamic>? staffData;
+  const CustomerList({super.key, this.staffData});
+
+
   @override
   State<CustomerList> createState() => _CustomerListState();
 }

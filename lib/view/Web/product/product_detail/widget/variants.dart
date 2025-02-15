@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../../../view_model/product_detail.dart';
 
 class Variants extends StatelessWidget {
   final List<Map<String, dynamic>> variants;
@@ -12,6 +15,8 @@ class Variants extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final productDetailModel = Provider.of<ProductDetailModel>(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -38,7 +43,7 @@ class Variants extends StatelessWidget {
           ...variants.map((variant) {
             return ListTile(
               title: Text('Kích thước: ${variant['size']}'),
-              subtitle: Text('Giá: ${variant['price']} - Số lượng: ${variant['quantity']}'),
+              subtitle: Text('Giá gốc: ${productDetailModel.formatPrice(variant['basePrice'])}, Giá bán: ${productDetailModel.formatPrice(variant['sellingPrice'])} - Số lượng: ${variant['quantity']}'),
               trailing: IconButton(
                 icon: const Icon(Icons.edit, color: Colors.blue),
                 onPressed: () => onEditVariant(variant),

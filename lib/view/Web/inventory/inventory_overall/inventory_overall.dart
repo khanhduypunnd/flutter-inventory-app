@@ -10,28 +10,15 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class InventoryOverall extends StatefulWidget {
-  const InventoryOverall({super.key});
+  final Map<String, dynamic>? staffData;
+  const InventoryOverall({super.key, this.staffData});
 
   @override
   State<InventoryOverall> createState() => _InventoryOverallState();
 }
 
 class _InventoryOverallState extends State<InventoryOverall> {
-  // final ApiService uriAPIService = ApiService();
-  //
-  // List<Product> products = [];
-  // List<Product> productsInStock = [];
-  // List<Product> productsOutOfStock = [];
-  //
-  // int totalStock = 0;
-  // int totalSalePrice = 0;
-  // int totalValue = 0;
-  // int totalProfit = 0;
-  // int totalProducts = 0;
-
   late double maxWidth = 0.0;
-
-  // bool isLoading = false;
 
   @override
   void initState() {
@@ -47,108 +34,6 @@ class _InventoryOverallState extends State<InventoryOverall> {
     super.didChangeDependencies();
     maxWidth = MediaQuery.of(context).size.width;
   }
-
-  // Future<void> _fetchProducts() async {
-  //   setState(() {
-  //     isLoading = true;
-  //   });
-  //
-  //   try {
-  //     final url = Uri.parse(uriAPIService.apiUrlProduct);
-  //     final response = await http.get(url);
-  //
-  //     if (response.statusCode == 200) {
-  //       final List<dynamic> jsonData = json.decode(response.body);
-  //
-  //       setState(() {
-  //         products = jsonData.map<Product>((data) {
-  //           return Product.fromJson(data);
-  //         }).toList();
-  //
-  //         for (var product in products) {
-  //           List<String> sizesInStock = [];
-  //           List<String> sizesOutOfStock = [];
-  //
-  //           for (int i = 0; i < product.sellPrices.length; i++) {
-  //             totalSalePrice = product.sellPrices[i] as int;
-  //             totalValue = product.actualPrices[i] as int;
-  //           }
-  //
-  //           for (int i = 0; i < product.sizes.length; i++) {
-  //             if (product.quantities[i] > 0) {
-  //               totalStock += product.quantities[i];
-  //               sizesInStock.add(product.sizes[i]);
-  //             } else {
-  //               sizesOutOfStock.add(product.sizes[i]);
-  //             }
-  //           }
-  //
-  //           totalProfit = totalSalePrice - totalValue;
-  //
-  //           if (sizesInStock.isNotEmpty) {
-  //             productsInStock.add(Product(
-  //               id: product.id,
-  //               name: product.name,
-  //               supplier: product.supplier,
-  //               category: product.category,
-  //               usage: product.usage,
-  //               origin: product.origin,
-  //               description: product.description,
-  //               notes: product.notes,
-  //               sizes: sizesInStock,
-  //               actualPrices: product.actualPrices,
-  //               sellPrices: product.sellPrices,
-  //               quantities: sizesInStock.map((size) {
-  //                 int index = product.sizes.indexOf(size);
-  //                 return product.quantities[index];
-  //               }).toList(),
-  //               image: product.image,
-  //               averageRating: product.averageRating,
-  //               totalReviews: product.totalReviews,
-  //             ));
-  //           }
-  //
-  //           if (sizesOutOfStock.isNotEmpty) {
-  //             productsOutOfStock.add(Product(
-  //               id: product.id,
-  //               name: product.name,
-  //               supplier: product.supplier,
-  //               category: product.category,
-  //               usage: product.usage,
-  //               origin: product.origin,
-  //               description: product.description,
-  //               notes: product.notes,
-  //               sizes: sizesOutOfStock,
-  //               actualPrices: product.actualPrices,
-  //               sellPrices: product.sellPrices,
-  //               quantities: sizesOutOfStock.map((size) {
-  //                 int index = product.sizes.indexOf(size);
-  //                 return product.quantities[index];
-  //               }).toList(),
-  //               image: product.image,
-  //               averageRating: product.averageRating,
-  //               totalReviews: product.totalReviews,
-  //             ));
-  //           }
-  //         }
-  //
-  //         totalProducts = products.length;
-  //         print(totalProducts);
-  //       });
-  //     } else {
-  //       throw Exception('Failed to fetch products: ${response.statusCode}');
-  //     }
-  //   } catch (error) {
-  //     print('Error fetching products: $error');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Lỗi khi tải sản phẩm: $error')),
-  //     );
-  //   } finally {
-  //     setState(() {
-  //       isLoading = false;
-  //     });
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {

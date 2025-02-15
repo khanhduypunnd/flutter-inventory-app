@@ -1,15 +1,22 @@
 import 'package:dacntt1_mobile_admin/view_model/order.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
 import '../../../shared/core/theme/colors_app.dart';
 
 class ListOrder extends StatefulWidget {
+  final Map<String, dynamic>? staffData;
+
+  const ListOrder({super.key, this.staffData});
+
   @override
   State<ListOrder> createState() => _ListOrderState();
 }
 
 class _ListOrderState extends State<ListOrder> {
+  Map<String, dynamic>? staffData;
+  List<int>? roleDetail;
   @override
   void initState() {
     super.initState();
@@ -19,14 +26,15 @@ class _ListOrderState extends State<ListOrder> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
-    final ordersmodel = Provider.of<ListOrderModel>(context);
-    int totalPages = (ordersmodel.totalOrders / ordersmodel.rowsPerPage).ceil();
+    final ordersModel = Provider.of<ListOrderModel>(context);
+    int totalPages = (ordersModel.totalOrders / ordersModel.rowsPerPage).ceil();
     const int maxPagesToShow = 5;
 
-    int startPage = ordersmodel.currentPage - (maxPagesToShow ~/ 2);
-    int endPage = ordersmodel.currentPage + (maxPagesToShow ~/ 2);
+    int startPage = ordersModel.currentPage - (maxPagesToShow ~/ 2);
+    int endPage = ordersModel.currentPage + (maxPagesToShow ~/ 2);
 
     if (startPage < 1) {
       startPage = 1;
@@ -81,7 +89,7 @@ class _ListOrderState extends State<ListOrder> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 5.0, vertical: 5.0),
-                      child: ordersmodel.isLoading
+                      child: ordersModel.isLoading
                           ? const Center(child: CircularProgressIndicator())
                           : SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
@@ -99,18 +107,18 @@ class _ListOrderState extends State<ListOrder> {
                                     DataColumn(label: Text('Tổng tiền')),
                                     DataColumn(label: Text('Kênh')),
                                   ],
-                                  rows: ordersmodel.orders
+                                  rows: ordersModel.orders
                                       .map<DataRow>((order) => DataRow(
                                             cells: <DataCell>[
                                               DataCell(Text(order.id)),
                                               DataCell(
                                                   Text(order.date.toString())),
-                                              DataCell(Text(ordersmodel.getCustomerName(order.cid))),
+                                              DataCell(Text(ordersModel.getCustomerName(order.cid))),
                                               DataCell(Text(
-                                                ordersmodel.getStatusText(
+                                                ordersModel.getStatusText(
                                                     order.status),
                                                 style: TextStyle(
-                                                    color: ordersmodel
+                                                    color: ordersModel
                                                         .getStatusColor(
                                                             order.status),
                                                     fontWeight:
@@ -138,8 +146,8 @@ class _ListOrderState extends State<ListOrder> {
                             PopupMenuButton<int>(
                               onSelected: (value) {
                                 setState(() {
-                                  ordersmodel.rowsPerPage = value;
-                                  ordersmodel.fetchOrders();
+                                  ordersModel.rowsPerPage = value;
+                                  ordersModel.fetchOrders();
                                 });
                               },
                               itemBuilder: (BuildContext context) {
@@ -176,7 +184,7 @@ class _ListOrderState extends State<ListOrder> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Text("Hiển thị ${ordersmodel.rowsPerPage}",
+                                    Text("Hiển thị ${ordersModel.rowsPerPage}",
                                         style: const TextStyle(fontSize: 16)),
                                     const Icon(Icons.arrow_drop_down),
                                   ],
@@ -187,22 +195,22 @@ class _ListOrderState extends State<ListOrder> {
                               children: [
                                 IconButton(
                                   icon: const Icon(Icons.first_page),
-                                  onPressed: ordersmodel.currentPage > 1
+                                  onPressed: ordersModel.currentPage > 1
                                       ? () {
                                           setState(() {
-                                            ordersmodel.currentPage = 1;
-                                            ordersmodel.fetchOrders();
+                                            ordersModel.currentPage = 1;
+                                            ordersModel.fetchOrders();
                                           });
                                         }
                                       : null,
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.chevron_left),
-                                  onPressed: ordersmodel.currentPage > 1
+                                  onPressed: ordersModel.currentPage > 1
                                       ? () {
                                           setState(() {
-                                            ordersmodel.currentPage--;
-                                            ordersmodel.fetchOrders();
+                                            ordersModel.currentPage--;
+                                            ordersModel.fetchOrders();
                                           });
                                         }
                                       : null,
@@ -217,18 +225,18 @@ class _ListOrderState extends State<ListOrder> {
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: pageIndex ==
-                                                  ordersmodel.currentPage
+                                                  ordersModel.currentPage
                                               ? Colors.blue
                                               : Colors.grey[300],
                                           foregroundColor: pageIndex ==
-                                                  ordersmodel.currentPage
+                                                  ordersModel.currentPage
                                               ? Colors.white
                                               : Colors.black,
                                         ),
                                         onPressed: () {
                                           setState(() {
-                                            ordersmodel.currentPage = pageIndex;
-                                            ordersmodel.fetchOrders();
+                                            ordersModel.currentPage = pageIndex;
+                                            ordersModel.fetchOrders();
                                           });
                                         },
                                         child: Text('$pageIndex'),
@@ -239,11 +247,11 @@ class _ListOrderState extends State<ListOrder> {
                                 IconButton(
                                   icon: const Icon(Icons.chevron_right),
                                   onPressed:
-                                      ordersmodel.currentPage < totalPages
+                                      ordersModel.currentPage < totalPages
                                           ? () {
                                               setState(() {
-                                                ordersmodel.currentPage++;
-                                                ordersmodel.fetchOrders();
+                                                ordersModel.currentPage++;
+                                                ordersModel.fetchOrders();
                                               });
                                             }
                                           : null,
@@ -251,12 +259,12 @@ class _ListOrderState extends State<ListOrder> {
                                 IconButton(
                                   icon: const Icon(Icons.last_page),
                                   onPressed:
-                                      ordersmodel.currentPage < totalPages
+                                      ordersModel.currentPage < totalPages
                                           ? () {
                                               setState(() {
-                                                ordersmodel.currentPage =
+                                                ordersModel.currentPage =
                                                     totalPages;
-                                                ordersmodel.fetchOrders();
+                                                ordersModel.fetchOrders();
                                               });
                                             }
                                           : null,

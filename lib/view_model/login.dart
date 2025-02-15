@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,7 +18,7 @@ class LoginModel extends ChangeNotifier{
   String? token;
   String? errorMessage;
 
-  Future<bool> login(BuildContext context,String email, String password) async {
+  Future<Map<String, dynamic>?> login(BuildContext context, String email, String password) async {
     isLoading = true;
     notifyListeners();
 
@@ -25,37 +26,45 @@ class LoginModel extends ChangeNotifier{
 
     try {
       final response = await http.post(
-        Uri.parse('${apiUrl}/login'),
+        Uri.parse('$apiUrl/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );
 
       final data = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
         token = data['token'];
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token!);
 
-
         isLoading = false;
         notifyListeners();
-        return true;
+
+        return data['customer'];
       } else {
         errorMessage = data['error'] ?? "Đăng nhập thất bại";
         isLoading = false;
         notifyListeners();
-        return false;
+        return null;
       }
     } catch (e) {
-
       showCustomToast(context, 'Đăng nhập thất bại');
-
       errorMessage = "Lỗi kết nối đến server";
       isLoading = false;
       notifyListeners();
-      return false;
+      return null;
     }
+  }
+
+  Future<void> logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.remove('auth_token');
+    context.go('/login');
+
+    notifyListeners();
   }
 
   void showCustomToast(BuildContext context, String message) {

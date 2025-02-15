@@ -10,8 +10,11 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AdjustInventory extends StatefulWidget {
+  final Map<String, dynamic>? staffData;
+  const AdjustInventory({super.key, this.staffData});
+
   @override
-  _AdjustInventoryState createState() => _AdjustInventoryState();
+  State<AdjustInventory> createState() => _AdjustInventoryState();
 }
 
 class _AdjustInventoryState extends State<AdjustInventory> {
@@ -29,13 +32,10 @@ class _AdjustInventoryState extends State<AdjustInventory> {
   int increaseAmount = 0;
   int decreaseAmount = 0;
 
-  String sId = 'S0001';
+  late String staffId = '';
+  late String staffName = '';
 
-  @override
-  void initState() {
-    super.initState();
-    _loadProducts();
-  }
+
 
   Future<void> _loadProducts() async {
     await _fetchProducts();
@@ -58,7 +58,6 @@ class _AdjustInventoryState extends State<AdjustInventory> {
               jsonData.map((data) => Product.fromJson(data)).toList();
           _searchResults = _allProducts;
         });
-
       } else {
         throw Exception('Failed to fetch products: ${response.statusCode}');
       }
@@ -81,7 +80,7 @@ class _AdjustInventoryState extends State<AdjustInventory> {
       } else {
         _searchResults = _allProducts
             .where((product) =>
-            product.name.toLowerCase().contains(query.toLowerCase()))
+                product.name.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
     });
@@ -174,7 +173,7 @@ class _AdjustInventoryState extends State<AdjustInventory> {
 
     final Map<String, dynamic> ganData = {
       'ganId': newGanId,
-      'sId': sId,
+      'sId': staffId,
       'date': DateTime.now().toIso8601String(),
       'increasedQuantity': increaseAmount,
       'descreaedQuantity': decreaseAmount,
@@ -191,8 +190,7 @@ class _AdjustInventoryState extends State<AdjustInventory> {
     };
 
     try {
-      final response =
-      await http.post(Uri.parse(uriAPIService.apiUrlGan),
+      final response = await http.post(Uri.parse(uriAPIService.apiUrlGan),
           headers: {
             'Content-Type': 'application/json',
           },
@@ -220,71 +218,19 @@ class _AdjustInventoryState extends State<AdjustInventory> {
     }
   }
 
-  // Future<void> _updateProductQuantities(List<GANDetail> details) async {
-  //   for (var detail in details) {
-  //     try {
-  //
-  //       final urlGet = Uri.parse('${uriAPIService.apiUrlProduct}/${detail.productId}');
-  //       final responseGet = await http.get(urlGet);
-  //
-  //       if (responseGet.statusCode == 200) {
-  //         final productData = jsonDecode(responseGet.body);
-  //
-  //         final sizeIndex = productData['sizes'].indexOf(detail.size[0]);
-  //         if (sizeIndex == -1) {
-  //           print('Size ${detail.size[0]} not found for product ${detail.productId}');
-  //         }
-  //
-  //         productData['quantities'][sizeIndex] = detail.newQuantity;
-  //
-  //         print(productData);
-  //
-  //         final urlPut = Uri.parse('${uriAPIService.apiUrlProduct}/${detail.productId}');
-  //         final responsePut = await http.put(
-  //           urlPut,
-  //           headers: {
-  //             'Content-Type': 'application/json',
-  //           },
-  //           body: jsonEncode(productData),
-  //         );
-  //
-  //         if (responsePut.statusCode == 200 || responsePut.statusCode == 204) {
-  //           if (kDebugMode) {
-  //             print('Product ${detail.productId} updated successfully');
-  //           }
-  //         } else {
-  //           if (kDebugMode) {
-  //             print('Failed to update product ${detail.productId}: ${responsePut.statusCode}');
-  //           }
-  //           if (kDebugMode) {
-  //             print('Response: ${responsePut.body}');
-  //           }
-  //         }
-  //       } else {
-  //         if (kDebugMode) {
-  //           print('Failed to fetch product ${detail.productId}: ${responseGet.statusCode}');
-  //         }
-  //       }
-  //     } catch (error) {
-  //       if (kDebugMode) {
-  //         print('Error updating product ${detail.productId}: $error');
-  //       }
-  //     }
-  //   }
-  // }
-  //
-
   Future<void> _updateProductQuantities(List<GANDetail> details) async {
     for (var detail in details) {
       try {
-        final urlGet = Uri.parse('${uriAPIService.apiUrlProduct}/${detail.productId}');
+        final urlGet =
+            Uri.parse('${uriAPIService.apiUrlProduct}/${detail.productId}');
         final responseGet = await http.get(urlGet);
 
         if (responseGet.statusCode == 200) {
           final apiResponse = jsonDecode(responseGet.body);
 
-          if (!apiResponse.containsKey("product") || apiResponse["product"] == null) {
-            print("⚠ Không tìm thấy sản phẩm ${detail.productId}");
+          if (!apiResponse.containsKey("product") ||
+              apiResponse["product"] == null) {
+            print("Không tìm thấy sản phẩm ${detail.productId}");
             continue;
           }
 
@@ -292,13 +238,15 @@ class _AdjustInventoryState extends State<AdjustInventory> {
 
           final sizeIndex = productData['sizes'].indexOf(detail.size[0]);
           if (sizeIndex == -1) {
-            print('Size ${detail.size[0]} not found for product ${detail.productId}');
+            print(
+                'Size ${detail.size[0]} not found for product ${detail.productId}');
           }
 
           productData['quantities'][sizeIndex] = detail.newQuantity;
           print(productData);
 
-          final urlPut = Uri.parse('${uriAPIService.apiUrlProduct}/${detail.productId}');
+          final urlPut =
+              Uri.parse('${uriAPIService.apiUrlProduct}/${detail.productId}');
           final responsePut = await http.put(
             urlPut,
             headers: {
@@ -313,7 +261,8 @@ class _AdjustInventoryState extends State<AdjustInventory> {
             }
           } else {
             if (kDebugMode) {
-              print('Failed to update product ${detail.productId}: ${responsePut.statusCode}');
+              print(
+                  'Failed to update product ${detail.productId}: ${responsePut.statusCode}');
             }
             if (kDebugMode) {
               print('Response: ${responsePut.body}');
@@ -321,7 +270,8 @@ class _AdjustInventoryState extends State<AdjustInventory> {
           }
         } else {
           if (kDebugMode) {
-            print('Failed to fetch product ${detail.productId}: ${responseGet.statusCode}');
+            print(
+                'Failed to fetch product ${detail.productId}: ${responseGet.statusCode}');
           }
         }
       } catch (error) {
@@ -378,9 +328,10 @@ class _AdjustInventoryState extends State<AdjustInventory> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
+    staffId = widget.staffData?['id'] ?? "Không có mã";
+    staffName = widget.staffData?['name'] ?? "Không có tên";
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColors.backgroundColor,
@@ -413,7 +364,11 @@ class _AdjustInventoryState extends State<AdjustInventory> {
                             labelText: 'Tìm kiếm sản phẩm',
                             suffixIcon: IconButton(
                               icon: Icon(Icons.search),
-                              onPressed: _showSearchResults,
+                              onPressed: () async {
+                                await _fetchProducts();
+                                _searchProduct(_searchController.text);
+                                _showSearchResults();
+                              },
                             ),
                           ),
                         ),
@@ -479,14 +434,14 @@ class _AdjustInventoryState extends State<AdjustInventory> {
                                   itemBuilder: (context, sizeIndex) {
                                     final size = product.sizes[sizeIndex];
                                     final actualQuantity = int.tryParse(product
-                                        .quantities[sizeIndex]
-                                        .toString()) ??
+                                            .quantities[sizeIndex]
+                                            .toString()) ??
                                         0;
                                     int adjustedQuantity = int.tryParse(
-                                        _quantityControllers[index]
-                                        ?[sizeIndex]
-                                            ?.text ??
-                                            '0') ??
+                                            _quantityControllers[index]
+                                                        ?[sizeIndex]
+                                                    ?.text ??
+                                                '0') ??
                                         0;
                                     return Row(
                                       children: [
@@ -513,7 +468,7 @@ class _AdjustInventoryState extends State<AdjustInventory> {
                                           width: 50,
                                           child: TextFormField(
                                             controller: _quantityControllers[
-                                            product.id]![size],
+                                                product.id]![size],
                                             keyboardType: TextInputType.number,
                                             decoration: const InputDecoration(
                                               border: OutlineInputBorder(),
@@ -645,13 +600,20 @@ class _AdjustInventoryState extends State<AdjustInventory> {
                                   String newGanId = generateGanId(currentId);
 
                                   for (var product in _selectedProducts) {
-                                    for (var sizeIndex = 0; sizeIndex < product.sizes.length; sizeIndex++) {
+                                    for (var sizeIndex = 0;
+                                        sizeIndex < product.sizes.length;
+                                        sizeIndex++) {
                                       String size = product.sizes[sizeIndex];
-                                      int oldQuantity = product.quantities[sizeIndex];
+                                      int oldQuantity =
+                                          product.quantities[sizeIndex];
                                       int adjustedQuantity = int.tryParse(
-                                          _quantityControllers[product.id]?[size]?.text ?? '0') ??
+                                              _quantityControllers[product.id]
+                                                          ?[size]
+                                                      ?.text ??
+                                                  '0') ??
                                           0;
-                                      int newQuantity = oldQuantity + adjustedQuantity;
+                                      int newQuantity =
+                                          oldQuantity + adjustedQuantity;
 
                                       ganDetails.add(
                                         GANDetail(
@@ -664,7 +626,8 @@ class _AdjustInventoryState extends State<AdjustInventory> {
                                       );
 
                                       setState(() {
-                                        product.quantities[sizeIndex] = newQuantity;
+                                        product.quantities[sizeIndex] =
+                                            newQuantity;
                                       });
                                     }
                                   }
@@ -674,7 +637,8 @@ class _AdjustInventoryState extends State<AdjustInventory> {
 
                                     await _updateProductQuantities(ganDetails);
 
-                                    showCustomToast(context, 'Lưu thành công và cập nhật số lượng sản phẩm!');
+                                    showCustomToast(context,
+                                        'Lưu thành công và cập nhật số lượng sản phẩm!');
 
                                     setState(() {
                                       _selectedProducts.clear();
@@ -684,10 +648,10 @@ class _AdjustInventoryState extends State<AdjustInventory> {
                                       decreaseAmount = 0;
                                     });
                                   } catch (error) {
-                                    showCustomToast(context, 'Lưu thất bại: $error');
+                                    showCustomToast(
+                                        context, 'Lưu thất bại: $error');
                                   }
                                 },
-
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blueAccent,
                                   foregroundColor: Colors.white,

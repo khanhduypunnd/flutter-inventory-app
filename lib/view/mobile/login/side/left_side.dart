@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../shared/core/theme/colors_app.dart';
@@ -60,18 +61,10 @@ class LeftSide extends StatelessWidget {
                         String email = emailController.text.trim();
                         String password = passwordController.text.trim();
 
-                        bool success = await loginModel.login(context,email, password);
-                        if (success) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DashboardWeb(navigatorKey: GlobalKey<NavigatorState>()),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Đăng nhập thất bại")),
-                          );
+                        Map<String, dynamic>? staffData = (await loginModel.login(context, email, password)) as Map<String, dynamic>?;
+
+                        if (staffData != null) {
+                          context.go('/dashboard', extra: staffData);
                         }
                       },
                       child: loginModel.isLoading

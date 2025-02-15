@@ -4,7 +4,8 @@ import 'analysis/inventory_analysis.dart';
 import '../../../shared/core/theme/colors_app.dart';
 
 class Analysis extends StatelessWidget {
-  const Analysis({super.key});
+  final Map<String, dynamic>? staffData;
+  const Analysis({super.key, this.staffData});
 
   @override
   Widget build(BuildContext context) {

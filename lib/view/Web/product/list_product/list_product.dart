@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../shared/core/services/uriApi.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 import '../../../../../data/product.dart';
@@ -6,7 +7,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ListProduct extends StatefulWidget {
-  const ListProduct({super.key});
+  final Map<String, dynamic>? staffData;
+  const ListProduct({super.key, this.staffData});
 
   @override
   State<ListProduct> createState() => _ListProductState();
@@ -61,7 +63,6 @@ class _ListProductState extends State<ListProduct> {
     }
   }
 
-
   void _updateProductsByPage(int pageIndex) {
     setState(() {
       currentPage = pageIndex;
@@ -97,7 +98,8 @@ class _ListProductState extends State<ListProduct> {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: Padding(
-        padding: const EdgeInsets.only(left: 50, right: 50, bottom: 30, top: 50),
+        padding:
+            const EdgeInsets.only(left: 50, right: 50, bottom: 30, top: 50),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
           decoration: BoxDecoration(
@@ -134,32 +136,53 @@ class _ListProductState extends State<ListProduct> {
                 isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minWidth: screenWidth,
-                    ),
-                    child: DataTable(
-                      columnSpacing: 50.0,
-                      columns: const [
-                        DataColumn(label: Text('Tên')),
-                        DataColumn(label: Text('Nhà cung cấp')),
-                        DataColumn(label: Text('Danh mục')),
-                        DataColumn(label: Text('Tồn kho')),
-                      ],
-                      rows: _getPaginatedProducts().map((product) {
-                        final Product prod = product as Product;
-                        return DataRow(cells: [
-                          DataCell(Text(prod.name)),
-                          DataCell(Text(prod.supplier)),
-                          DataCell(Text(prod.category.join(', '))),
-                          DataCell(Text(prod.quantities.fold(0, (sum, q) => sum + q).toString())),
-                        ]);
-                      }).toList(),
-            
-                    ),
-                  ),
-                ),
+                        scrollDirection: Axis.horizontal,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: screenWidth,
+                          ),
+                          child: DataTable(
+                            columnSpacing: 50.0,
+                            columns: const [
+                              DataColumn(label: Text('Tên')),
+                              DataColumn(label: Text('Nhà cung cấp')),
+                              DataColumn(label: Text('Danh mục')),
+                              DataColumn(label: Text('Tồn kho')),
+                            ],
+                            rows: _getPaginatedProducts().map((product) {
+                              final Product prod = product as Product;
+                              return DataRow(cells: [
+                                DataCell(
+                                  Text(prod.name),
+                                  onTap: () {
+                                    context.go('/product_detail/${prod.id}', extra:  prod);
+                                  },
+                                ),
+                                DataCell(
+                                  Text(prod.supplier),
+                                  onTap: () {
+                                    context.go('/product_detail/${prod.id}', extra: prod);
+                                  },
+                                ),
+                                DataCell(
+                                  Text(prod.category.join(', ')),
+                                  onTap: () {
+                                    context.go('/product_detail/${prod.id}', extra: prod);
+                                  },
+                                ),
+                                DataCell(
+                                  Text(prod.quantities
+                                      .fold(0, (sum, q) => sum + q)
+                                      .toString()),
+                                  onTap: () {
+                                    context.go('/product_detail/${prod.id}', extra: prod);
+                                  },
+                                ),
+                              ]);
+                            }).toList(),
+                          ),
+                        ),
+                      ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -188,7 +211,8 @@ class _ListProductState extends State<ListProduct> {
                         ];
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey),
                           borderRadius: BorderRadius.circular(5),
@@ -208,23 +232,24 @@ class _ListProductState extends State<ListProduct> {
                           icon: const Icon(Icons.first_page),
                           onPressed: currentPage > 1
                               ? () {
-                            _updateProductsByPage(1);
-                          }
+                                  _updateProductsByPage(1);
+                                }
                               : null,
                         ),
                         IconButton(
                           icon: const Icon(Icons.chevron_left),
                           onPressed: currentPage > 1
                               ? () {
-                            _updateProductsByPage(currentPage - 1);
-                          }
+                                  _updateProductsByPage(currentPage - 1);
+                                }
                               : null,
                         ),
                         Row(
                           children: List.generate(
                             totalPages,
-                                (index) => Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                            (index) => Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 4.0),
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: currentPage == index + 1
@@ -246,16 +271,16 @@ class _ListProductState extends State<ListProduct> {
                           icon: const Icon(Icons.chevron_right),
                           onPressed: currentPage < totalPages
                               ? () {
-                            _updateProductsByPage(currentPage + 1);
-                          }
+                                  _updateProductsByPage(currentPage + 1);
+                                }
                               : null,
                         ),
                         IconButton(
                           icon: const Icon(Icons.last_page),
                           onPressed: currentPage < totalPages
                               ? () {
-                            _updateProductsByPage(totalPages);
-                          }
+                                  _updateProductsByPage(totalPages);
+                                }
                               : null,
                         ),
                       ],

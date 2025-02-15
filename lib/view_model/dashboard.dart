@@ -82,10 +82,6 @@ class DashboardModel extends ChangeNotifier {
         listProducts.clear();
         listProducts.addAll(products);
 
-        // productQuantity = listProducts.length;
-        // outOfStock = listProducts.fold<int>(0, (sum, product) {
-        //   return sum + product.quantities.where((q) => q == 0).length;
-        // });
         for (var product in listProducts) {
           for (var quantity in product.quantities) {
             if (quantity == 0) {

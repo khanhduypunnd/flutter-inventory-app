@@ -28,7 +28,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
   Widget build(BuildContext context) {
     maxWidth = MediaQuery.of(context).size.width;
 
-    final staff = Provider.of<NewEmployee>(context);
+    final staffModel = Provider.of<NewEmployee>(context);
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: SingleChildScrollView(
@@ -79,23 +79,23 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                           ),
                         ],
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          CircleAvatar(
+                          const CircleAvatar(
                             backgroundColor: Colors.green,
                             child: Text('M'),
                           ),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Name',
-                                style: TextStyle(
+                                '${staffModel.admin[0].name}',
+                                style: const TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 18),
                               ),
-                              Text('baotram.nguyencgoc0906@gmail.com'),
+                              Text('${staffModel.admin[0].email}'),
                             ],
                           ),
                         ],
@@ -131,7 +131,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                                 const Icon(Icons.people_alt_outlined),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Đã tạo ${staff.staffs.length} tài khoản nhân viên',
+                                  'Đã tạo ${staffModel.staffs.length} tài khoản nhân viên',
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ],
@@ -200,12 +200,12 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          ...staff.staffs.map((e) => ListTile(
+                          ...staffModel.staffs.map((e) => ListTile(
                             title: Row(
                               children: [
                                 Text(e.name),
                                 const SizedBox(width: 10,),
-                                Text(e.role, style: TextStyle(color: AppColors.titleColor, fontWeight: FontWeight.bold),),
+                                Text(e.role, style: const TextStyle(color: AppColors.titleColor, fontWeight: FontWeight.bold),),
                               ],
                             ),
                             subtitle: Row(
@@ -217,7 +217,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                             ),
                             trailing: const Icon(Icons.delete_outline),
                             onTap: () {
-                              staff.showDeleteConfirmationDialog(context, e.sid, ()=> staff.deleteStaff(context,e.sid));
+                              staffModel.showDeleteConfirmationDialog(context, e.sid, ()=> staffModel.deleteStaff(context,e.sid));
                               },
                           )).toList(),
                         ],
@@ -234,10 +234,3 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
   }
 }
 
-
-// class Employee {
-//   final String name;
-//   final String email;
-//
-//   Employee({required this.name, required this.email});
-// }

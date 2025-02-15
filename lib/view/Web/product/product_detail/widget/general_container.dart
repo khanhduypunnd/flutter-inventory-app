@@ -6,7 +6,9 @@ class GeneralInfo extends StatefulWidget {
   final TextEditingController supplierController;
   final String? selectedAttribute;
   final TextEditingController notesController;
+  final TextEditingController origin;
   final TextEditingController desController;
+  final TextEditingController usageController;
   final List<String> attributeOptions;
   final Function(String?) onAttributeChanged;
 
@@ -16,7 +18,9 @@ class GeneralInfo extends StatefulWidget {
     required this.supplierController,
     required this.selectedAttribute,
     required this.notesController,
+    required this.origin,
     required this.desController,
+    required this.usageController,
     required this.attributeOptions,
     required this.onAttributeChanged,
   });
@@ -43,13 +47,7 @@ class _GeneralInfoState extends State<GeneralInfo> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          const BoxShadow(
-            color: Colors.grey,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
+        boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 4, offset: Offset(0, 2))],
       ),
       child: Column(
         children: [
@@ -76,18 +74,13 @@ class _GeneralInfoState extends State<GeneralInfo> {
                 decoration: InputDecoration(
                   hintText: 'Nhập tên sản phẩm',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
                 ),
               ),
               const SizedBox(height: 20),
               isWarning
                   ? Row(
                 children: [
-                  Flexible(
-                    flex: 1,
+                  Expanded(
                     child: Column(
                       children: [
                         Container(
@@ -103,18 +96,13 @@ class _GeneralInfoState extends State<GeneralInfo> {
                           decoration: InputDecoration(
                             hintText: 'Nhập nhà cung cấp',
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(width: 20),
-                  Flexible(
-                    flex: 1,
+                  Expanded(
                     child: Column(
                       children: [
                         Container(
@@ -126,15 +114,27 @@ class _GeneralInfoState extends State<GeneralInfo> {
                           ),
                         ),
                         DropdownButtonFormField<String>(
+                          dropdownColor: Colors.white,
                           value: widget.selectedAttribute,
-                          hint: const Text('Chọn loại sản phẩm'),
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
-                          ),
                           items: widget.attributeOptions
                               .map((label) => DropdownMenuItem(value: label, child: Text(label)))
                               .toList(),
                           onChanged: widget.onAttributeChanged,
+                          decoration: InputDecoration(
+                            fillColor: Colors.white,
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              borderSide: const BorderSide(color: Colors.grey),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              borderSide: const BorderSide(color: Colors.blue),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -143,97 +143,141 @@ class _GeneralInfoState extends State<GeneralInfo> {
               )
                   : Column(
                 children: [
-                  Column(
-                    children: [
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: const Text(
-                          'Nhà cung cấp',
-                          style: TextStyle(fontSize: 15, color: AppColors.subtitleColor, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      TextFormField(
-                        controller: widget.supplierController,
-                        decoration: InputDecoration(
-                          hintText: 'Nhập nhà cung cấp',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                        ),
-                      ),
-                    ],
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: const Text(
+                      'Nhà cung cấp',
+                      style: TextStyle(fontSize: 15, color: AppColors.subtitleColor, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  TextFormField(
+                    controller: widget.supplierController,
+                    decoration: InputDecoration(
+                      hintText: 'Nhập nhà cung cấp',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+                    ),
                   ),
                   const SizedBox(height: 20),
-                  Column(
-                    children: [
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: const Text(
-                          'Loại sản phẩm',
-                          style: TextStyle(fontSize: 15, color: AppColors.subtitleColor, fontWeight: FontWeight.bold),
-                        ),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: const Text(
+                      'Loại sản phẩm',
+                      style: TextStyle(fontSize: 15, color: AppColors.subtitleColor, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DropdownButtonFormField<String>(
+                    dropdownColor: Colors.white,
+                    value: widget.selectedAttribute,
+                    items: widget.attributeOptions
+                        .map((label) => DropdownMenuItem(value: label, child: Text(label)))
+                        .toList(),
+                    onChanged: widget.onAttributeChanged,
+                    decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
                       ),
-                      DropdownButtonFormField<String>(
-                        value: widget.selectedAttribute,
-                        hint: const Text('Chọn loại sản phẩm'),
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
-                        ),
-                        items: widget.attributeOptions
-                            .map((label) => DropdownMenuItem(value: label, child: Text(label)))
-                            .toList(),
-                        onChanged: widget.onAttributeChanged,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: const BorderSide(color: Colors.grey),
                       ),
-                    ],
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: const BorderSide(color: Colors.blue),
+                      ),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              Container(
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.only(bottom: 10),
-                child: const Text('Nhóm hương',
-                    style: TextStyle(fontSize: 15, color: AppColors.subtitleColor, fontWeight: FontWeight.bold)),
-              ),
-              TextFormField(
-                controller: widget.notesController,
-                decoration: InputDecoration(
-                  hintText: 'Nhập nhóm hương sản phẩm',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.only(bottom: 10),
-                child: const Text('Mô tả sản phẩm',
-                    style: TextStyle(fontSize: 15, color: AppColors.subtitleColor, fontWeight: FontWeight.bold)),
-              ),
-              TextFormField(
-                controller: widget.desController,
-                decoration: InputDecoration(
-                  hintText: 'Mô tả sản phẩm',
-                  contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-                maxLines: 4,
-              ),
             ],
           ),
+
+          const SizedBox(height: 20),
+
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.only(bottom: 10),
+            child: const Text('Phiên bản',
+                style: TextStyle(fontSize: 15, color: AppColors.subtitleColor, fontWeight: FontWeight.bold)),
+          ),
+          TextFormField(
+            controller: widget.usageController,
+            decoration: InputDecoration(
+              hintText: 'Eau de Toilette, Eau de Parfum,...',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.only(bottom: 10),
+            child: const Text('Xuất xứ',
+                style: TextStyle(fontSize: 15, color: AppColors.subtitleColor, fontWeight: FontWeight.bold)),
+          ),
+          TextFormField(
+            controller: widget.origin,
+            decoration: InputDecoration(
+              hintText: 'Nhập xuất xứ',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.only(bottom: 10),
+            child: const Text('Nhóm hương',
+                style: TextStyle(fontSize: 15, color: AppColors.subtitleColor, fontWeight: FontWeight.bold)),
+          ),
+          TextFormField(
+            controller: widget.notesController,
+            decoration: InputDecoration(
+              hintText: 'Nhập nhóm hương sản phẩm',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.only(bottom: 10),
+            child: const Text('Mô tả sản phẩm',
+                style: TextStyle(fontSize: 15, color: AppColors.subtitleColor, fontWeight: FontWeight.bold)),
+          ),
+          TextFormField(
+            controller: widget.desController,
+            decoration: InputDecoration(
+              hintText: 'Mô tả sản phẩm',
+              contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+            maxLines: 4,
+          ),
+
         ],
       ),
     );
