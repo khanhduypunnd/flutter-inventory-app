@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import '../../../../shared/core/theme/colors_app.dart';
-import '../../../../view_model/report.dart';
+import '../../../../view_model/report/report.dart';
 import '../chart/line_chart.dart';
 import '../chart/pie_chart.dart';
 import '../chart/best_product.dart';
@@ -71,7 +71,6 @@ class _ReportDashboardState extends State<BusinessAnalysis> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColors.backgroundColor,
-        // Bọc toàn bộ nội dung body trong Stack để có thể chồng overlay loading lên
         body: Stack(
           children: [
             SingleChildScrollView(
@@ -406,7 +405,7 @@ class _ReportDashboardState extends State<BusinessAnalysis> {
                 ),
               ),
             ),
-            // Phần overlay loading
+
             if (reportModel.isLoading)
               Container(
                 color: Colors.black.withOpacity(0.5),

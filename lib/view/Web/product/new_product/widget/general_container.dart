@@ -74,6 +74,10 @@ class _GeneralInfoState extends State<GeneralInfo> {
                 decoration: InputDecoration(
                   hintText: 'Nhập tên sản phẩm',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -96,6 +100,10 @@ class _GeneralInfoState extends State<GeneralInfo> {
                           decoration: InputDecoration(
                             hintText: 'Nhập nhà cung cấp',
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
                           ),
                         ),
                       ],
@@ -156,6 +164,10 @@ class _GeneralInfoState extends State<GeneralInfo> {
                     decoration: InputDecoration(
                       hintText: 'Nhập nhà cung cấp',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),

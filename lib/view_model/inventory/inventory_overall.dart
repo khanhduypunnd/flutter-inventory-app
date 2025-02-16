@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
-import '../data/product.dart';
-import '../shared/core/services/uriApi.dart';
+import '../../data/product.dart';
+import '../../shared/core/services/uriApi.dart';
 
 class InventoryOverallModel extends ChangeNotifier {
   final ApiService uriAPIService = ApiService();

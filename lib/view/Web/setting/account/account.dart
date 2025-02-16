@@ -1,43 +1,39 @@
+import 'package:dacntt1_mobile_admin/view_model/setting/account.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 import 'change_pass/change_pass.dart';
 
 class Account extends StatefulWidget {
+  final Map<String, dynamic>? staffData;
+
+  const Account({super.key, this.staffData});
+
   @override
   State<Account> createState() => _UserFormPageState();
 }
 
 class _UserFormPageState extends State<Account> {
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-  final TextEditingController positionController = TextEditingController();
-
   late double maxWidth;
-
-  @override
-  void dispose() {
-    usernameController.dispose();
-    passwordController.dispose();
-    nameController.dispose();
-    addressController.dispose();
-    phoneController.dispose();
-    positionController.dispose();
-    super.dispose();
-  }
 
   @override
   void didChangeDependencies() {
     // TODO: implement didChangeDependencies
     super.didChangeDependencies();
     maxWidth = MediaQuery.of(context).size.width;
+
+    final accountModel = Provider.of<AccountModel>(context, listen: false);
+    if (widget.staffData != null) {
+      accountModel.setStaffData(widget.staffData!);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     bool isChange = maxWidth < 700;
+
+    final accountModel = Provider.of<AccountModel>(context);
+
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: Padding(
@@ -74,21 +70,11 @@ class _UserFormPageState extends State<Account> {
                           const Text('Tên đăng nhập'),
                           const SizedBox(height: 5),
                           TextFormField(
-                            controller: usernameController,
+                            controller: accountModel.usernameController,
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                             ),
                             enabled: false,
-                          ),
-                          const SizedBox(height: 15),
-                          const Text('Mật khẩu'),
-                          const SizedBox(height: 5),
-                          TextFormField(
-                            controller: passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                            ),
                           ),
                           const SizedBox(height: 15),
                           ElevatedButton(
@@ -97,11 +83,9 @@ class _UserFormPageState extends State<Account> {
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.blueAccent,
                               side: const BorderSide(
-                                  color: Colors.blue,
-                                  width: 2),
+                                  color: Colors.blue, width: 2),
                               shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(5),
+                                borderRadius: BorderRadius.circular(5),
                               ),
                             ),
                             child: const Text('Đổi mật khẩu'),
@@ -128,7 +112,8 @@ class _UserFormPageState extends State<Account> {
                                     const Text('Tên đăng nhập'),
                                     const SizedBox(height: 5),
                                     TextFormField(
-                                      controller: usernameController,
+                                      controller:
+                                          accountModel.usernameController,
                                       decoration: const InputDecoration(
                                         border: OutlineInputBorder(),
                                       ),
@@ -137,22 +122,6 @@ class _UserFormPageState extends State<Account> {
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 15),
-                              Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                    const Text('Mật khẩu'),
-                                    const SizedBox(height: 5),
-                                    TextFormField(
-                                      controller: passwordController,
-                                      obscureText: true,
-                                      decoration: const InputDecoration(
-                                        border: OutlineInputBorder(),
-                                      ),
-                                    ),
-                                ],
-                              ))
                             ],
                           ),
                           const SizedBox(height: 15),
@@ -160,18 +129,18 @@ class _UserFormPageState extends State<Account> {
                             onPressed: () {
                               showDialog(
                                 context: context,
-                                builder: (context) => const ChangePasswordDialog(),
+                                builder: (context) => ChangePasswordDialog(
+                                    staffId:
+                                        widget.staffData!['id'].toString()),
                               );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.blueAccent,
                               side: const BorderSide(
-                                  color: Colors.blueAccent,
-                                  width: 2),
+                                  color: Colors.blueAccent, width: 2),
                               shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(5),
+                                borderRadius: BorderRadius.circular(5),
                               ),
                             ),
                             child: const Text('Đổi mật khẩu'),
@@ -179,9 +148,7 @@ class _UserFormPageState extends State<Account> {
                         ],
                       ),
               ),
-
               const SizedBox(height: 20),
-
               Container(
                 padding: const EdgeInsets.all(15.0),
                 decoration: BoxDecoration(
@@ -196,110 +163,113 @@ class _UserFormPageState extends State<Account> {
                     ),
                   ],
                 ),
-                child: isChange ?
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Thông tin cá nhân',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.titleColor),
-                    ),
-                    const SizedBox(height: 15),
-                    const Text('Họ và tên'),
-                    const SizedBox(height: 5),
-                    TextFormField(
-                      controller: nameController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Nhập họ và tên',
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    const Text('Địa chỉ'),
-                    const SizedBox(height: 5),
-                    TextFormField(
-                      controller: addressController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Nhập địa chỉ',
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    const Text('Số điện thoại'),
-                    const SizedBox(height: 5),
-                    TextFormField(
-                      controller: phoneController,
-                      keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Nhập số điện thoại',
-                      ),
-                    ),
-                  ],
-                )
-                :
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Thông tin cá nhân',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.titleColor),
-                    ),
-                    const SizedBox(height: 15),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                child: isChange
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Thông tin cá nhân',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.titleColor),
+                          ),
+                          const SizedBox(height: 15),
+                          const Text('Họ và tên'),
+                          const SizedBox(height: 5),
+                          TextFormField(
+                            cursorColor: Colors.blueAccent,
+                            controller: accountModel.nameController,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                    color: Colors.blueAccent, width: 1),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+                          const Text('Số điện thoại'),
+                          const SizedBox(height: 5),
+                          TextFormField(
+                            cursorColor: Colors.blueAccent,
+                            controller: accountModel.phoneController,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                    color: Colors.blueAccent, width: 1),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Thông tin cá nhân',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.titleColor),
+                          ),
+                          const SizedBox(height: 15),
+                          Row(
                             children: [
-                              const Text('Họ và tên'),
-                              const SizedBox(height: 5),
-                              TextFormField(
-                                controller: nameController,
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Họ và tên'),
+                                    const SizedBox(height: 5),
+                                    TextFormField(
+                                      cursorColor: Colors.blueAccent,
+                                      controller: accountModel.nameController,
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                              color: Colors.blueAccent,
+                                              width: 1),
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
+                              const SizedBox(width: 15),
+                              Expanded(
+                                  child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Số điện thoại'),
+                                  const SizedBox(height: 5),
+                                  TextFormField(
+                                    cursorColor: Colors.blueAccent,
+                                    controller: accountModel.phoneController,
+                                    keyboardType: TextInputType.phone,
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                            color: Colors.blueAccent, width: 1),
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ))
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 15),
-                        Expanded(
-                            child:Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('Số điện thoại'),
-                                const SizedBox(height: 5),
-                                TextFormField(
-                                  controller: phoneController,
-                                  keyboardType: TextInputType.phone,
-                                  decoration: const InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    hintText: 'Nhập số điện thoại',
-                                  ),
-                                ),
-                              ],
-                            ))
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-                    const Text('Địa chỉ'),
-                    const SizedBox(height: 5),
-                    TextFormField(
-                      controller: addressController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Nhập địa chỉ',
+                        ],
                       ),
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 20),
               Container(
@@ -330,7 +300,7 @@ class _UserFormPageState extends State<Account> {
                     const Text('Chức vụ'),
                     const SizedBox(height: 5),
                     TextFormField(
-                      controller: positionController,
+                      controller: accountModel.positionController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                       ),

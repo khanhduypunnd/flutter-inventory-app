@@ -1,4 +1,4 @@
-import 'package:dacntt1_mobile_admin/view_model/order.dart';
+import 'package:dacntt1_mobile_admin/view_model/order/order.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -30,22 +30,22 @@ class _ListOrderState extends State<ListOrder> {
   @override
   Widget build(BuildContext context) {
     final ordersModel = Provider.of<ListOrderModel>(context);
-    int totalPages = (ordersModel.totalOrders / ordersModel.rowsPerPage).ceil();
-    const int maxPagesToShow = 5;
-
-    int startPage = ordersModel.currentPage - (maxPagesToShow ~/ 2);
-    int endPage = ordersModel.currentPage + (maxPagesToShow ~/ 2);
-
-    if (startPage < 1) {
-      startPage = 1;
-      endPage = maxPagesToShow;
-    }
-
-    if (endPage > totalPages) {
-      endPage = totalPages;
-      startPage = totalPages - maxPagesToShow + 1;
-      if (startPage < 1) startPage = 1;
-    }
+    int totalPages = ordersModel.totalPages;
+    // const int maxPagesToShow = 5;
+    //
+    // int startPage = ordersModel.currentPage - (maxPagesToShow ~/ 2);
+    // int endPage = ordersModel.currentPage + (maxPagesToShow ~/ 2);
+    //
+    // if (startPage < 1) {
+    //   startPage = 1;
+    //   endPage = maxPagesToShow;
+    // }
+    //
+    // if (endPage > totalPages) {
+    //   endPage = totalPages;
+    //   startPage = totalPages - maxPagesToShow + 1;
+    //   if (startPage < 1) startPage = 1;
+    // }
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -107,7 +107,7 @@ class _ListOrderState extends State<ListOrder> {
                                     DataColumn(label: Text('Tổng tiền')),
                                     DataColumn(label: Text('Kênh')),
                                   ],
-                                  rows: ordersModel.orders
+                                  rows: ordersModel.displayedOrders
                                       .map<DataRow>((order) => DataRow(
                                             cells: <DataCell>[
                                               DataCell(Text(order.id)),
@@ -134,145 +134,70 @@ class _ListOrderState extends State<ListOrder> {
                               ),
                             ),
                     ),
+
+
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      child: Container(
-                        color: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 20),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            PopupMenuButton<int>(
-                              onSelected: (value) {
-                                setState(() {
-                                  ordersModel.rowsPerPage = value;
-                                  ordersModel.fetchOrders();
-                                });
-                              },
-                              itemBuilder: (BuildContext context) {
-                                return [
-                                  PopupMenuItem<int>(
-                                    value: 10,
-                                    child: Text(
-                                      "Hiển thị 10",
-                                      style:
-                                          TextStyle(color: Colors.blueAccent),
-                                    ),
-                                  ),
-                                  PopupMenuItem<int>(
-                                    value: 20,
-                                    child: Text("Hiển thị 20",
-                                        style: TextStyle(
-                                            color: Colors.blueAccent)),
-                                  ),
-                                  PopupMenuItem<int>(
-                                    value: 50,
-                                    child: Text("Hiển thị 50",
-                                        style: TextStyle(
-                                            color: Colors.blueAccent)),
-                                  ),
-                                ];
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Text("Hiển thị ${ordersModel.rowsPerPage}",
-                                        style: const TextStyle(fontSize: 16)),
-                                    const Icon(Icons.arrow_drop_down),
-                                  ],
-                                ),
+                      child:  Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          PopupMenuButton<int>(
+                            color: Colors.white,
+                            onSelected: (value) {
+                              ordersModel.setRowsPerPage(value);
+                            },
+                            itemBuilder: (BuildContext context) {
+                              return [
+                                const PopupMenuItem<int>(value: 10, child: Text("Hiển thị 10")),
+                                const PopupMenuItem<int>(value: 20, child: Text("Hiển thị 20")),
+                                const PopupMenuItem<int>(value: 50, child: Text("Hiển thị 50")),
+                              ];
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Row(
+                                children: [
+                                  Text("Hiển thị ${ordersModel.rowsPerPage}", style: const TextStyle(fontSize: 16)),
+                                  const Icon(Icons.arrow_drop_down),
+                                ],
                               ),
                             ),
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.first_page),
-                                  onPressed: ordersModel.currentPage > 1
-                                      ? () {
-                                          setState(() {
-                                            ordersModel.currentPage = 1;
-                                            ordersModel.fetchOrders();
-                                          });
-                                        }
-                                      : null,
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.chevron_left),
-                                  onPressed: ordersModel.currentPage > 1
-                                      ? () {
-                                          setState(() {
-                                            ordersModel.currentPage--;
-                                            ordersModel.fetchOrders();
-                                          });
-                                        }
-                                      : null,
-                                ),
-                                Row(
-                                  children: List.generate(
-                                      endPage - startPage + 1, (index) {
-                                    int pageIndex = startPage + index;
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 4.0),
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: pageIndex ==
-                                                  ordersModel.currentPage
-                                              ? Colors.blue
-                                              : Colors.grey[300],
-                                          foregroundColor: pageIndex ==
-                                                  ordersModel.currentPage
-                                              ? Colors.white
-                                              : Colors.black,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            ordersModel.currentPage = pageIndex;
-                                            ordersModel.fetchOrders();
-                                          });
-                                        },
-                                        child: Text('$pageIndex'),
-                                      ),
-                                    );
-                                  }),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.chevron_right),
-                                  onPressed:
-                                      ordersModel.currentPage < totalPages
-                                          ? () {
-                                              setState(() {
-                                                ordersModel.currentPage++;
-                                                ordersModel.fetchOrders();
-                                              });
-                                            }
-                                          : null,
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.last_page),
-                                  onPressed:
-                                      ordersModel.currentPage < totalPages
-                                          ? () {
-                                              setState(() {
-                                                ordersModel.currentPage =
-                                                    totalPages;
-                                                ordersModel.fetchOrders();
-                                              });
-                                            }
-                                          : null,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                          ),
+
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.first_page),
+                                onPressed: ordersModel.currentPage > 1
+                                    ? () => ordersModel.goToPage(1)
+                                    : null,
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.chevron_left),
+                                onPressed: ordersModel.currentPage > 1
+                                    ? () => ordersModel.goToPage(ordersModel.currentPage - 1)
+                                    : null,
+                              ),
+                              Text("Trang ${ordersModel.currentPage}/$totalPages"),
+                              IconButton(
+                                icon: const Icon(Icons.chevron_right),
+                                onPressed: ordersModel.currentPage < totalPages
+                                    ? () => ordersModel.goToPage(ordersModel.currentPage + 1)
+                                    : null,
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.last_page),
+                                onPressed: ordersModel.currentPage < totalPages
+                                    ? () => ordersModel.goToPage(totalPages)
+                                    : null,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ],

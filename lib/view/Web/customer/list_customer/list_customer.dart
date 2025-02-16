@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:math';
 import '../../../../data/customer.dart';
 import '../../../../shared/core/services/uriApi.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+
+import '../../../../view_model/customer/customer.dart';
 
 class CustomerList extends StatefulWidget {
   final Map<String, dynamic>? staffData;
@@ -16,53 +19,21 @@ class CustomerList extends StatefulWidget {
 }
 
 class _CustomerListState extends State<CustomerList> {
-  final ApiService uriAPIService = ApiService();
-
-
-  late int rowsPerPage = 20;
-  int currentPage = 1;
-  int totalCustomers = 682;
-  List<Customer> customers = [];
-  bool isLoading = false;
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    fetchCustomers();
-  }
-
-  Future<void> fetchCustomers() async {
-    if (customers.isNotEmpty) return;
-    setState(() {
-      isLoading = true;
+    Future.microtask(() {
+      Provider.of<CustomerModel>(context, listen: false).fetchCustomers();
     });
-
-    try {
-      final url = Uri.parse(
-          uriAPIService.apiUrlCustomer);
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-        final customer =
-        jsonData.map((data) => Customer.fromJson(data)).toList();
-        customers.clear();
-        customers.addAll(customer);
-      } else {
-        throw Exception('Failed to fetch customers: ${response.statusCode}');
-      }
-    } catch (error) {
-      print('Error fetching customers: $error');
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
   }
+
 
   @override
   Widget build(BuildContext context) {
-    int totalPages = (totalCustomers / rowsPerPage).ceil();
+    final customerModel = Provider.of<CustomerModel>(context);
+    int totalPages = customerModel.totalPages;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -112,7 +83,7 @@ class _CustomerListState extends State<CustomerList> {
 
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
-                  child: isLoading
+                  child: customerModel.isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -133,7 +104,7 @@ class _CustomerListState extends State<CustomerList> {
                             label: Text('Email', style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
                         ],
-                        rows: customers.map<DataRow>((customer) {
+                        rows: customerModel.displayedCustomers.map<DataRow>((customer) {
                           return DataRow(
                             cells: <DataCell>[
                               DataCell(Text(customer.name, style: const TextStyle(color: Colors.blueAccent),)),
@@ -148,98 +119,68 @@ class _CustomerListState extends State<CustomerList> {
                 ),
             
                 // Phân trang
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    PopupMenuButton<int>(
-                      onSelected: (value) {
-                        setState(() {
-                          rowsPerPage = value;
-                          fetchCustomers();
-                        });
-                      },
-                      itemBuilder: (BuildContext context) {
-                        return [
-                          const PopupMenuItem<int>(
-                            value: 10,
-                            child: Text("Hiển thị 10"),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      PopupMenuButton<int>(
+                        onSelected: (value) {
+                          customerModel.setRowsPerPage(value);
+                        },
+                        color: Colors.white,
+                        itemBuilder: (BuildContext context) {
+                          return [
+                            const PopupMenuItem<int>(value: 10, child: Text("Hiển thị 10")),
+                            const PopupMenuItem<int>(value: 20, child: Text("Hiển thị 20")),
+                            const PopupMenuItem<int>(value: 50, child: Text("Hiển thị 50")),
+                          ];
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(5),
                           ),
-                          const PopupMenuItem<int>(
-                            value: 20,
-                            child: Text("Hiển thị 20"),
+                          child: Row(
+                            children: [
+                              Text("Hiển thị ${customerModel.rowsPerPage}", style: const TextStyle(fontSize: 16)),
+                              const Icon(Icons.arrow_drop_down),
+                            ],
                           ),
-                          const PopupMenuItem<int>(
-                            value: 50,
-                            child: Text("Hiển thị 50"),
-                          ),
-                        ];
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Row(
-                          children: [
-                            Text("Hiển thị $rowsPerPage",
-                                style: const TextStyle(fontSize: 16)),
-                            const Icon(Icons.arrow_drop_down),
-                          ],
                         ),
                       ),
-                    ),
-            
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.first_page),
-                          onPressed: currentPage > 1
-                              ? () {
-                            setState(() {
-                              currentPage = 1;
-                              fetchCustomers();
-                            });
-                          }
-                              : null,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.chevron_left),
-                          onPressed: currentPage > 1
-                              ? () {
-                            setState(() {
-                              currentPage--;
-                              fetchCustomers();
-                            });
-                          }
-                              : null,
-                        ),
-                        Text("Trang $currentPage/$totalPages"),
-                        IconButton(
-                          icon: const Icon(Icons.chevron_right),
-                          onPressed: currentPage < totalPages
-                              ? () {
-                            setState(() {
-                              currentPage++;
-                              fetchCustomers();
-                            });
-                          }
-                              : null,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.last_page),
-                          onPressed: currentPage < totalPages
-                              ? () {
-                            setState(() {
-                              currentPage = totalPages;
-                              fetchCustomers();
-                            });
-                          }
-                              : null,
-                        ),
-                      ],
-                    ),
-                  ],
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.first_page),
+                            onPressed: customerModel.currentPage > 1
+                                ? () => customerModel.goToPage(1)
+                                : null,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.chevron_left),
+                            onPressed: customerModel.currentPage > 1
+                                ? () => customerModel.goToPage(customerModel.currentPage - 1)
+                                : null,
+                          ),
+                          Text("Trang ${customerModel.currentPage}/$totalPages"),
+                          IconButton(
+                            icon: const Icon(Icons.chevron_right),
+                            onPressed: customerModel.currentPage < totalPages
+                                ? () => customerModel.goToPage(customerModel.currentPage + 1)
+                                : null,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.last_page),
+                            onPressed: customerModel.currentPage < totalPages
+                                ? () => customerModel.goToPage(totalPages)
+                                : null,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

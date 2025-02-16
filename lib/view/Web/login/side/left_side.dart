@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 import '../../../../view/Web/dashboard_web.dart';
-import '../../../../view_model/login.dart';
+import '../../../../view_model/login/login.dart';
 
 class LeftSide extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();

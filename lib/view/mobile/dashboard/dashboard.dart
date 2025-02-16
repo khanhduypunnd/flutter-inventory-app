@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
+import '../../../view_model/dashboard/dashboard.dart';
 import 'widget/kpi_card.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -8,8 +10,32 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Future.microtask(() {
+      Provider.of<DashboardModel>(context, listen: false).fetchOrders();
+      Provider.of<DashboardModel>(context, listen: false).fetchProducts();
+    });
+  }
   @override
   Widget build(BuildContext context) {
+    final dashboardModel = Provider.of<DashboardModel>(context);
+    final revenueData = dashboardModel.getRevenueByHour();
+    List<BarChartGroupData> barGroups = List.generate(24, (index) {
+      double revenue = revenueData[index] ?? 0;
+      return BarChartGroupData(
+        x: index,
+        barRods: [
+          BarChartRodData(
+            toY: revenue,
+            color: Colors.blueAccent,
+          ),
+        ],
+      );
+    });
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: Padding(
@@ -44,7 +70,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       width: double.infinity,
                       child: InfoCard(
                         title: 'Doanh thu',
-                        value: '1,000,000 đ',
+                        value: dashboardModel.formatPriceDouble(dashboardModel.revenue),
                         // percentage: '5.5',
                       ),
                     ),
@@ -53,7 +79,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       width: double.infinity,
                       child: InfoCard(
                         title: 'Số lượng đơn hàng',
-                        value: '50',
+                        value: dashboardModel.formatPriceInt(dashboardModel.orderQuantity),
                         // percentage: '3.0',
                       ),
                     ),
@@ -91,7 +117,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               touchTooltipData: BarTouchTooltipData(
                               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                                 return BarTooltipItem(
-                                  'Thời gian: ${group.x}h\nDoanh thu: ${rod.toY ~/ 1000000} triệu',
+                                  'Thời gian: ${group.x}h\nDoanh thu: ${(rod.toY / 1000000).toStringAsFixed(2)} triệu',
                                   const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -143,17 +169,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                           gridData: FlGridData(show: false),
                           borderData: FlBorderData(show: false),
-                          barGroups: List.generate(24, (index) {
-                            return BarChartGroupData(
-                              x: index,
-                              barRods: [
-                                BarChartRodData(
-                                  toY: (index * 1000000 % 5000000).toDouble(),
-                                  color: Colors.blueAccent,
-                                ),
-                              ],
-                            );
-                          }),
+                          barGroups: barGroups,
                         ),
                       ),
                     ),
@@ -190,7 +206,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       width: double.infinity,
                       child: InfoCard(
                         title: 'Số lượng sản phẩm trong kho',
-                        value: '500',
+                        value: dashboardModel.formatPriceInt(dashboardModel.productQuantity),
                         // percentage: '1.5',
                       ),
                     ),
@@ -199,7 +215,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       width: double.infinity,
                       child: InfoCard(
                         title: 'Sản phẩm tồn bằng 0',
-                        value: '20',
+                        value: dashboardModel.formatPriceInt(dashboardModel.outOfStock),
                         // percentage: '-2.0',
                       ),
                     ),

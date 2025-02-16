@@ -12,8 +12,7 @@ class ImageUpload extends StatefulWidget {
   _ImageUploadState createState() => _ImageUploadState();
 }
 
-class _ImageUploadState extends  State<ImageUpload> {
-
+class _ImageUploadState extends State<ImageUpload> {
   final TextEditingController _urlController = TextEditingController();
 
   @override
@@ -42,9 +41,14 @@ class _ImageUploadState extends  State<ImageUpload> {
           const SizedBox(height: 10),
           TextField(
             controller: _urlController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Nhập URL ảnh',
               border: OutlineInputBorder(),
+              focusedBorder: OutlineInputBorder(
+                borderSide:
+                    const BorderSide(color: Colors.blueAccent, width: 2),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
             ),
           ),
           TextButton(

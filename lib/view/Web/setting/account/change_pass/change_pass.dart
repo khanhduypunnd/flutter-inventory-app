@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../../../view_model/setting/account.dart';
 
 class ChangePasswordDialog extends StatelessWidget {
-  const ChangePasswordDialog({Key? key}) : super(key: key);
+  final String staffId;
+  const ChangePasswordDialog({Key? key, required this.staffId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final accountModel = Provider.of<AccountModel>(context);
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
@@ -35,6 +40,7 @@ class ChangePasswordDialog extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               TextFormField(
+                controller: accountModel.currentPassController,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Mật khẩu hiện tại',
@@ -53,6 +59,7 @@ class ChangePasswordDialog extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               TextFormField(
+                controller: accountModel.newPassController1,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Mật khẩu mới',
@@ -64,6 +71,7 @@ class ChangePasswordDialog extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               TextFormField(
+                controller: accountModel.newPassController2,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Xác nhận mật khẩu mới',
@@ -98,7 +106,10 @@ class ChangePasswordDialog extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: accountModel.isLoading
+                        ? null
+                        : () {
+                      accountModel.changePass(context, staffId);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
@@ -112,6 +123,16 @@ class ChangePasswordDialog extends StatelessWidget {
                   ),
                 ],
               ),
+
+              if (accountModel.isLoading)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black.withOpacity(0.3), // Màu overlay
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

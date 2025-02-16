@@ -1,71 +1,73 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import '../../../../shared/core/services/uriApi.dart';
+import '../../../../../data/product.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../data/employee.dart';
-import '../shared/core/services/uriApi.dart';
-
-class LoginModel extends ChangeNotifier{
+class ListProductModel extends ChangeNotifier {
   final ApiService uriAPIService = ApiService();
 
-  List<Staff> listStaff = [];
-
+  int rowsPerPage = 20;
+  int currentPage = 1;
+  List<Product> products = [];
+  List<Product> displayedProducts = [];
+  int totalProducts = 0;
   bool isLoading = false;
 
-  String? token;
-  String? errorMessage;
-
-  Future<Map<String, dynamic>?> login(BuildContext context, String email, String password) async {
+  Future<void> fetchProducts(BuildContext context) async {
+    if (products.isNotEmpty) {
+      _updateDisplayedProducts();
+      return;
+    }
     isLoading = true;
     notifyListeners();
 
-    final String apiUrl = uriAPIService.apiUrlStaff;
-
     try {
-      final response = await http.post(
-        Uri.parse('$apiUrl/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
-      );
-
-      final data = jsonDecode(response.body);
+      final url = Uri.parse(uriAPIService.apiUrlProduct);
+      final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        token = data['token'];
+        final List<dynamic> jsonData = json.decode(response.body);
 
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', token!);
-
-        isLoading = false;
-        notifyListeners();
-
-        return data['customer'];
+        products.clear();
+        products = jsonData.map((data) {
+          return Product.fromJson(data);
+        }).toList();
+        _updateDisplayedProducts();
       } else {
-        errorMessage = data['error'] ?? "Đăng nhập thất bại";
-        isLoading = false;
-        notifyListeners();
-        return null;
+        throw Exception('Failed to fetch products: ${response.statusCode}');
       }
-    } catch (e) {
-      showCustomToast(context, 'Đăng nhập thất bại');
-      errorMessage = "Lỗi kết nối đến server";
+    } catch (error) {
+      showCustomToast(context, 'Lỗi khi tải sản phẩm');
+    } finally {
       isLoading = false;
       notifyListeners();
-      return null;
     }
   }
 
-  Future<void> logout(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    await prefs.remove('auth_token');
-    context.go('/login');
-
+  void _updateDisplayedProducts() {
+    int startIndex = (currentPage - 1) * rowsPerPage;
+    int endIndex = startIndex + rowsPerPage;
+    displayedProducts = products.sublist(
+        startIndex, endIndex > products.length ? products.length : endIndex);
     notifyListeners();
   }
+
+  void setRowsPerPage(int value) {
+    rowsPerPage = value;
+    currentPage = 1;
+    _updateDisplayedProducts();
+  }
+
+  void goToPage(int page) {
+    if (page > 0 && page <= totalPages) {
+      currentPage = page;
+      _updateDisplayedProducts();
+    }
+  }
+
+  int get totalPages => (products.length / rowsPerPage).ceil();
 
   void showCustomToast(BuildContext context, String message) {
     final overlay = Overlay.of(context);
@@ -112,5 +114,4 @@ class LoginModel extends ChangeNotifier{
       overlayEntry.remove();
     });
   }
-
 }

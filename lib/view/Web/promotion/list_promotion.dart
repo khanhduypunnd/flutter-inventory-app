@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
-import '../../../shared/core/services/uriApi.dart';
+import 'package:provider/provider.dart';
 import '../../../shared/core/theme/colors_app.dart';
-import '../../../data/promotion.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import '../../../view_model/promotion/list_promotion.dart';
 
 class ListPromotion extends StatefulWidget {
   final Map<String, dynamic>? staffData;
@@ -16,204 +13,32 @@ class ListPromotion extends StatefulWidget {
 }
 
 class _ListPromotionState extends State<ListPromotion> {
-  final ApiService uriAPIService = ApiService();
-
-  int rowsPerPage = 20;
-  int currentPage = 1;
-  int totalPromotions = 0;
-  List<Map<String, dynamic>> promotions = [];
-  bool isLoading = false;
   late double maxWidth = 0.0;
-
-  // Checkbox selection states
-  List<bool> selectedRows = [];
-  bool selectAll = false;
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    _fetchPromotions();
-  }
-
-  Future<void> _fetchPromotions() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      final url = Uri.parse(uriAPIService.apiUrlGiftCode);
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-
-        setState(() {
-          promotions = jsonData.map((data) {
-            final promotion = Promotion.fromJson(data);
-            return {
-              "id": promotion.id,
-              "code": promotion.code,
-              "description": promotion.description,
-              "value": promotion.value.toString(),
-              "value_limit": promotion.valueLimit.toString(),
-              "beginning": promotion.beginning.toIso8601String(),
-              "expiration": promotion.expiration.toIso8601String() ?? '',
-            };
-          }).toList();
-          totalPromotions = promotions.length;
-          selectedRows = List<bool>.filled(promotions.length, false);
-        });
-      } else {
-        throw Exception('Failed to fetch promotions: ${response.statusCode}');
-      }
-    } catch (error) {
-      print('Error fetching promotions: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi khi tải dữ liệu: $error')),
-      );
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  void _filterPromotions(String query) {
-    setState(() {
-      promotions = promotions.where((promotion) {
-        final id = promotion["id"].toLowerCase();
-        final description = promotion["description"].toLowerCase();
-        return id.contains(query.toLowerCase()) ||
-            description.contains(query.toLowerCase());
-      }).toList();
-      totalPromotions = promotions.length;
-    });
-  }
-
-  void _updateRowsPerPage(int value) {
-    setState(() {
-      rowsPerPage = value;
-      currentPage = 1;
-    });
-  }
-
-  void _toggleSelectAll(bool? value) {
-    setState(() {
-      selectAll = value ?? false;
-      selectedRows = List<bool>.filled(promotions.length, selectAll);
-    });
-  }
-
-  void _toggleRowSelection(int index, bool? value) {
-    setState(() {
-      selectedRows[index] = value ?? false;
-      selectAll = selectedRows.every((isSelected) => isSelected);
-    });
-  }
-
-  Future<void> _deleteSelectedRows() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      final selectedIds = promotions
-          .asMap()
-          .entries
-          .where((entry) => selectedRows[entry.key])
-          .map((entry) => entry.value["id"])
-          .toList();
-
-      for (String id in selectedIds) {
-        final url = Uri.parse('${uriAPIService.apiUrlGiftCode}/$id');
-        final response = await http.delete(url);
-
-        if (response.statusCode != 200) {
-          throw Exception('Failed to delete promotion with ID $id');
-        }
-      }
-
-      setState(() {
-        promotions = promotions
-            .asMap()
-            .entries
-            .where((entry) => !selectedRows[entry.key])
-            .map((entry) => entry.value)
-            .toList();
-        selectedRows = List<bool>.filled(promotions.length, false);
-        selectAll = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã xóa các mục được chọn.')),
-      );
-    } catch (error) {
-      print('Error deleting promotions: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi khi xóa dữ liệu: $error')),
-      );
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  void showCustomToast(BuildContext context, String message) {
-    final overlay = Overlay.of(context);
-    final overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: 50,
-        left: MediaQuery.of(context).size.width * 0.1,
-        right: MediaQuery.of(context).size.width * 0.1,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.blueAccent,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.info, color: Colors.white),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    message,
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-    overlay.insert(overlayEntry);
-
-    Future.delayed(const Duration(seconds: 3), () {
-      overlayEntry.remove();
+    Future.microtask(() {
+      Provider.of<ListPromotionModel>(context, listen: false)
+          .fetchPromotions(context);
     });
   }
 
   @override
   void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
     super.didChangeDependencies();
     maxWidth = MediaQuery.of(context).size.width;
   }
 
   @override
   Widget build(BuildContext context) {
-    int totalPages = (totalPromotions / rowsPerPage).ceil();
+    final listPromotionModel = Provider.of<ListPromotionModel>(context);
+
+    int totalPages =
+        (listPromotionModel.totalPromotions / listPromotionModel.rowsPerPage)
+            .ceil();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -250,7 +75,7 @@ class _ListPromotionState extends State<ListPromotion> {
                                 border: OutlineInputBorder(),
                               ),
                               onChanged: (value) {
-                                _filterPromotions(value);
+                                listPromotionModel.filterPromotions(value);
                               },
                             ),
                           ),
@@ -265,12 +90,13 @@ class _ListPromotionState extends State<ListPromotion> {
                                 borderRadius: BorderRadius.circular(5),
                               ),
                             ),
-                            onPressed: selectedRows.contains(true)
-                                ? () {
-                                    _deleteSelectedRows();
-                                    showCustomToast(context, 'Xóa thành công!');
-                                  }
-                                : null,
+                            onPressed:
+                                listPromotionModel.selectedRows.contains(true)
+                                    ? () {
+                                        listPromotionModel
+                                            .deleteSelectedRows(context);
+                                      }
+                                    : null,
                             child: const Text("Xóa"),
                           ),
                         ],
@@ -278,7 +104,7 @@ class _ListPromotionState extends State<ListPromotion> {
                     ),
                     Container(
                       padding: const EdgeInsets.all(20.0),
-                      child: isLoading
+                      child: listPromotionModel.isLoading
                           ? const Center(child: CircularProgressIndicator())
                           : SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
@@ -290,8 +116,9 @@ class _ListPromotionState extends State<ListPromotion> {
                                     DataColumn(
                                       label: Checkbox(
                                         activeColor: Colors.blueAccent,
-                                        value: selectAll,
-                                        onChanged: _toggleSelectAll,
+                                        value: listPromotionModel.selectAll,
+                                        onChanged:
+                                            listPromotionModel.toggleSelectAll,
                                       ),
                                     ),
                                     const DataColumn(label: Text('Mã')),
@@ -301,15 +128,19 @@ class _ListPromotionState extends State<ListPromotion> {
                                     const DataColumn(label: Text('Bắt đầu')),
                                     const DataColumn(label: Text('Kết thúc')),
                                   ],
-                                  rows: promotions.asMap().entries.map((entry) {
+                                  rows: listPromotionModel.promotions
+                                      .asMap()
+                                      .entries
+                                      .map((entry) {
                                     final index = entry.key;
                                     final promotion = entry.value;
                                     return DataRow(cells: [
                                       DataCell(Checkbox(
                                         activeColor: Colors.blueAccent,
-                                        value: selectedRows[index],
-                                        onChanged: (value) =>
-                                            _toggleRowSelection(index, value),
+                                        value: listPromotionModel
+                                            .selectedRows[index],
+                                        onChanged: (value) => listPromotionModel
+                                            .toggleRowSelection(index, value),
                                       )),
                                       DataCell(Text(promotion["code"])),
                                       DataCell(Text(promotion["description"])),
@@ -333,7 +164,8 @@ class _ListPromotionState extends State<ListPromotion> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             PopupMenuButton<int>(
-                              onSelected: _updateRowsPerPage,
+                              color: Colors.white,
+                              onSelected: listPromotionModel.updateRowsPerPage,
                               itemBuilder: (BuildContext context) {
                                 return [
                                   const PopupMenuItem<int>(
@@ -359,7 +191,8 @@ class _ListPromotionState extends State<ListPromotion> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Text("Hiển thị $rowsPerPage",
+                                    Text(
+                                        "Hiển thị ${listPromotionModel.rowsPerPage}",
                                         style: const TextStyle(fontSize: 16)),
                                     const Icon(Icons.arrow_drop_down),
                                   ],
@@ -370,41 +203,45 @@ class _ListPromotionState extends State<ListPromotion> {
                               children: [
                                 IconButton(
                                   icon: const Icon(Icons.first_page),
-                                  onPressed: currentPage > 1
+                                  onPressed: listPromotionModel.currentPage > 1
                                       ? () {
                                           setState(() {
-                                            currentPage = 1;
+                                            listPromotionModel.currentPage = 1;
                                           });
                                         }
                                       : null,
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.chevron_left),
-                                  onPressed: currentPage > 1
+                                  onPressed: listPromotionModel.currentPage > 1
                                       ? () {
                                           setState(() {
-                                            currentPage--;
+                                            listPromotionModel.currentPage--;
                                           });
                                         }
                                       : null,
                                 ),
-                                Text("Trang $currentPage/$totalPages"),
+                                Text(
+                                    "Trang ${listPromotionModel.currentPage}/$totalPages"),
                                 IconButton(
                                   icon: const Icon(Icons.chevron_right),
-                                  onPressed: currentPage < totalPages
+                                  onPressed: listPromotionModel.currentPage <
+                                          totalPages
                                       ? () {
                                           setState(() {
-                                            currentPage++;
+                                            listPromotionModel.currentPage++;
                                           });
                                         }
                                       : null,
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.last_page),
-                                  onPressed: currentPage < totalPages
+                                  onPressed: listPromotionModel.currentPage <
+                                          totalPages
                                       ? () {
                                           setState(() {
-                                            currentPage = totalPages;
+                                            listPromotionModel.currentPage =
+                                                totalPages;
                                           });
                                         }
                                       : null,

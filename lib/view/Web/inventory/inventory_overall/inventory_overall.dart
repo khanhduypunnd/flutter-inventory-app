@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../shared/core/services/uriApi.dart';
 import '../../../../shared/core/theme/colors_app.dart';
-import '../../../../view_model/inventory_overall.dart';
+import '../../../../view_model/inventory/inventory_overall.dart';
 import 'widget/product_table.dart';
 import 'widget/card_infor.dart';
 import '../../../../../data/product.dart';

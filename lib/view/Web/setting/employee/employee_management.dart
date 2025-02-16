@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../data/employee.dart';
 import '../../../../shared/core/theme/colors_app.dart';
-import '../../../../view_model/new_employee.dart';
+import '../../../../view_model/setting/new_employee.dart';
 import 'new_employee/new_employee.dart';
 
 class EmployeeManagement extends StatefulWidget {

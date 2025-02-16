@@ -4,9 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'dart:convert';
 
-import '../data/order.dart';
-import '../data/product.dart';
-import '../shared/core/services/uriApi.dart';
+import '../../data/order.dart';
+import '../../data/product.dart';
+import '../../shared/core/services/uriApi.dart';
 
 class DashboardModel extends ChangeNotifier {
   final ApiService uriAPIService = ApiService();
@@ -30,7 +30,6 @@ class DashboardModel extends ChangeNotifier {
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
-
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
         List<Order> allOrders =
@@ -48,7 +47,7 @@ class DashboardModel extends ChangeNotifier {
 
         filteredOrders.sort((a, b) => b.date.compareTo(a.date));
         listOrders = filteredOrders;
-        revenue = listOrders.fold(0, (sum, order) => sum + order.receivedMoney);
+        revenue = listOrders.fold(0, (sum, order) => sum + order.receivedMoney.toDouble());
         orderQuantity = listOrders.length;
         notifyListeners();
       } else {

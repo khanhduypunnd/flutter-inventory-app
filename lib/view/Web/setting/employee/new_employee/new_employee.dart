@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../../shared/core/theme/colors_app.dart';
-import '../../../../../view_model/new_employee.dart';
+import '../../../../../view_model/setting/new_employee.dart';
 import '../../role/new_role/new_role.dart';
 
 class AddMemberDialog extends StatefulWidget {
@@ -128,41 +128,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
 
                 const SizedBox(height: 16),
 
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Thêm thành viên mới',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.titleColor),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                Row(
-                  children: [
-                    Checkbox(
-                      activeColor: Colors.blueAccent,
-                      value: newEmployee.isAddingStaff,
-                      onChanged: (value) {
-                        setState(() {
-                          newEmployee.isAddingStaff = value!;
-                        });
-                      },
-                    ),
-                    const Text(
-                      'Thêm nhân viên mới',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                if (newEmployee.isAddingStaff) NewRole(),
+                const NewRole(),
 
                 const SizedBox(height: 16),
 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../../shared/core/services/uriApi.dart';
 import '../../../../shared/core/theme/colors_app.dart';
+import '../../../../view_model/inventory/adjust_inventory_list.dart';
 import 'adjust_inven_detail.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -17,105 +19,22 @@ class AdjustInventoryHistory extends StatefulWidget {
 }
 
 class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
-  final ApiService uriAPIService = ApiService();
-
-  int rowsPerPage = 20;
-  int currentPage = 1;
-  int totalChecks = 0;
-  List<Map<String, dynamic>> adjustments = [];
-  List<Map<String, dynamic>> adjustments_details = [];
-  bool isLoading = false;
-
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    _fetchAdjustments();
-  }
-
-  Future<void> _fetchAdjustments() async {
-    setState(() {
-      isLoading = true;
+    Future.microtask(() {
+      Provider.of<AdjustInventoryListModel>(context, listen: false)
+          .fetchAdjustments();
     });
-
-    try {
-      final url = Uri.parse(
-          uriAPIService.apiUrlGan);
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        setState(() {
-          adjustments =
-              (data as List<dynamic>? ?? []).map<Map<String, dynamic>>((item) {
-            final adjustment = GAN(
-              ganId: item['ganId'] ?? '',
-              staffId: item['sId'] ?? '',
-              date: DateTime.fromMillisecondsSinceEpoch(
-                  item['date']['_seconds'] * 1000).toUtc(),
-              increasedQuantity: item['increasedQuantity'] ?? 0,
-              decreasedQuantity: item['descreaedQuantity'] ?? 0,
-              note: item['note'] ?? '',
-            );
-
-            final details = (item['details'] as List<dynamic>? ?? [])
-                .map<Map<String, dynamic>>((detail) {
-              final adjustmentsDetail = GANDetail(
-                ganId: detail['ganId'] ?? '',
-                productId: detail['pid'] ?? '',
-                size: (detail['size'] as List<dynamic>?)
-                        ?.map((s) => s.toString())
-                        .toList() ??
-                    [],
-                oldQuantity:
-                    int.tryParse(detail['oldQuantity']?.toString() ?? '0') ?? 0,
-                newQuantity:
-                    int.tryParse(detail['newQuantity']?.toString() ?? '0') ?? 0,
-              );
-
-              return {
-                "ganId": adjustmentsDetail.ganId,
-                "pid": adjustmentsDetail.productId,
-                "size": adjustmentsDetail.size,
-                "oldQuantity": adjustmentsDetail.oldQuantity,
-                "newQuantity": adjustmentsDetail.newQuantity,
-              };
-            }).toList();
-
-            return {
-              "ganId": adjustment.ganId,
-              "sId": adjustment.staffId,
-              "date": adjustment.date.toIso8601String(),
-              "increasedQuantity": adjustment.increasedQuantity,
-              "decreasedQuantity": adjustment.decreasedQuantity,
-              "note": adjustment.note,
-              "details": details,
-            };
-          }).toList();
-
-          adjustments.sort((a, b) {
-            final dateA = DateTime.parse(a['date']);
-            final dateB = DateTime.parse(b['date']);
-            return dateB.compareTo(dateA);
-          });
-
-          totalChecks = adjustments.length;
-        });
-      } else {
-        throw Exception('Failed to fetch data: ${response.body}');
-      }
-    } catch (error) {
-      print('Error fetching adjustments: $error');
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    int totalPages = (totalChecks / rowsPerPage).ceil();
+    final adjustInventoryListModel =
+        Provider.of<AdjustInventoryListModel>(context);
+
+    int totalPages = adjustInventoryListModel.totalPages;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -170,7 +89,7 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 5.0, vertical: 5.0),
-                      child: isLoading
+                      child: adjustInventoryListModel.isLoading
                           ? const Center(child: CircularProgressIndicator())
                           : SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
@@ -188,28 +107,35 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                                     DataColumn(label: Text('Số lượng tăng')),
                                     DataColumn(label: Text('Số lượng giảm')),
                                   ],
-                                  rows: adjustments
+                                  rows: adjustInventoryListModel
+                                      .displayedAdjustments
                                       .map<DataRow>((adjustment) => DataRow(
                                             cells: <DataCell>[
                                               DataCell(
                                                 Text(adjustment["ganId"] ??
                                                     'N/A'),
                                                 onTap: () {
-                                                  context.go('/adjust_detail/${adjustment["ganId"]}', extra: adjustment);
+                                                  context.go(
+                                                      '/adjust_detail/${adjustment["ganId"]}',
+                                                      extra: adjustment);
                                                 },
                                               ),
                                               DataCell(
                                                 Text(
                                                     adjustment["sId"] ?? 'N/A'),
                                                 onTap: () {
-                                                  context.go('/adjust_detail/${adjustment["ganId"]}', extra: adjustment);
+                                                  context.go(
+                                                      '/adjust_detail/${adjustment["ganId"]}',
+                                                      extra: adjustment);
                                                 },
                                               ),
                                               DataCell(
                                                 Text(adjustment["date"] ??
                                                     'N/A'),
                                                 onTap: () {
-                                                  context.go('/adjust_detail/${adjustment["ganId"]}', extra: adjustment);
+                                                  context.go(
+                                                      '/adjust_detail/${adjustment["ganId"]}',
+                                                      extra: adjustment);
                                                 },
                                               ),
                                               DataCell(
@@ -217,7 +143,9 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                                                         "increasedQuantity"]
                                                     .toString()),
                                                 onTap: () {
-                                                  context.go('/adjust_detail/${adjustment["ganId"]}', extra: adjustment);
+                                                  context.go(
+                                                      '/adjust_detail/${adjustment["ganId"]}',
+                                                      extra: adjustment);
                                                 },
                                               ),
                                               DataCell(
@@ -225,7 +153,9 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                                                         "decreasedQuantity"]
                                                     .toString()),
                                                 onTap: () {
-                                                  context.go('/adjust_detail/${adjustment["ganId"]}', extra: adjustment);
+                                                  context.go(
+                                                      '/adjust_detail/${adjustment["ganId"]}',
+                                                      extra: adjustment);
                                                 },
                                               ),
                                             ],
@@ -237,70 +167,59 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                     ),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minWidth: MediaQuery.of(context).size.width,
-                        ),
-                        child: Container(
-                          alignment: Alignment.center,
-                          color: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          PopupMenuButton<int>(
+                            color: Colors.white,
+                            onSelected: (value) {
+                              adjustInventoryListModel.setRowsPerPage(value);
+                            },
+                            itemBuilder: (BuildContext context) {
+                              return [
+                                const PopupMenuItem<int>(
+                                    value: 10, child: Text("Hiển thị 10")),
+                                const PopupMenuItem<int>(
+                                    value: 20, child: Text("Hiển thị 20")),
+                                const PopupMenuItem<int>(
+                                    value: 50, child: Text("Hiển thị 50")),
+                              ];
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Row(
                                 children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.first_page),
-                                    onPressed: currentPage > 1
-                                        ? () {
-                                            setState(() {
-                                              currentPage = 1;
-                                              _fetchAdjustments();
-                                            });
-                                          }
-                                        : null,
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.chevron_left),
-                                    onPressed: currentPage > 1
-                                        ? () {
-                                            setState(() {
-                                              currentPage--;
-                                              _fetchAdjustments();
-                                            });
-                                          }
-                                        : null,
-                                  ),
-                                  Text("Trang $currentPage/$totalPages"),
-                                  IconButton(
-                                    icon: const Icon(Icons.chevron_right),
-                                    onPressed: currentPage < totalPages
-                                        ? () {
-                                            setState(() {
-                                              currentPage++;
-                                              _fetchAdjustments();
-                                            });
-                                          }
-                                        : null,
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.last_page),
-                                    onPressed: currentPage < totalPages
-                                        ? () {
-                                            setState(() {
-                                              currentPage = totalPages;
-                                              _fetchAdjustments();
-                                            });
-                                          }
-                                        : null,
-                                  ),
+                                  Text(
+                                      "Hiển thị ${adjustInventoryListModel.rowsPerPage}",
+                                      style: const TextStyle(fontSize: 16)),
+                                  const Icon(Icons.arrow_drop_down),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                          IconButton(
+                            icon: const Icon(Icons.chevron_left),
+                            onPressed: adjustInventoryListModel.currentPage > 1
+                                ? () => adjustInventoryListModel.goToPage(
+                                    adjustInventoryListModel.currentPage - 1)
+                                : null,
+                          ),
+                          Text(
+                              "Trang ${adjustInventoryListModel.currentPage}/$totalPages"),
+                          IconButton(
+                            icon: const Icon(Icons.chevron_right),
+                            onPressed: adjustInventoryListModel.currentPage <
+                                    totalPages
+                                ? () => adjustInventoryListModel.goToPage(
+                                    adjustInventoryListModel.currentPage + 1)
+                                : null,
+                          ),
+                        ],
                       ),
                     ),
                   ],

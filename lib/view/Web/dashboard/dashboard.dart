@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../view_model/dashboard.dart';
+import '../../../view_model/dashboard/dashboard.dart';
 import 'widget/kpi_card.dart';
 
 class DashboardPage extends StatefulWidget {

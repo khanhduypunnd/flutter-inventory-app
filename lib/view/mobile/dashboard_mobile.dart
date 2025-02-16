@@ -14,33 +14,17 @@ import 'setting/role/role.dart';
 import 'drawer/drawer_mobile.dart';
 import '../../shared/core/theme/colors_app.dart';
 
-class MyApp extends StatelessWidget {
-  final GlobalKey<NavigatorState> navigatorKey;
-  const MyApp({super.key, required this.navigatorKey});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      debugShowCheckedModeBanner: false,
-      home: DashboardMobile(
-        navigatorKey: navigatorKey,
-      ),
-    );
-  }
-}
-
-class DashboardMobile extends StatefulWidget {
+class InventoryMobile extends StatefulWidget {
   // final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   final GlobalKey<NavigatorState> navigatorKey;
-  const DashboardMobile({super.key, required this.navigatorKey});
+  const InventoryMobile({super.key, required this.navigatorKey});
 
   @override
-  State<DashboardMobile> createState() => _DashboardWebState();
+  State<InventoryMobile> createState() => _DashboardWebState();
 }
 
-class _DashboardWebState extends State<DashboardMobile> {
+class _DashboardWebState extends State<InventoryMobile> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String _selectedPage = 'Tổng quan';
   bool _isDrawerOpen = false;

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import '../data/employee.dart';
-import '../shared/core/services/uriApi.dart';
+import '../../data/employee.dart';
+import '../../shared/core/services/uriApi.dart';
 
 class NewEmployee with ChangeNotifier {
   final ApiService uriAPIService = ApiService();
@@ -21,11 +21,12 @@ class NewEmployee with ChangeNotifier {
 
   bool isLoading = false;
 
-  String newStaffId = "S0001";
+  String newStaffId = '';
 
   List<int> rolePermissions = List.filled(12, 0);
 
   List<Staff> staffs =[];
+  List<Staff> admin = [];
 
   void toggleAddingStaff(bool value) {
     isAddingStaff = value;
@@ -37,39 +38,10 @@ class NewEmployee with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchLatestStaffId() async {
-    final String apiUrl =
-        uriAPIService.apiUrlStaff;
-
-    try {
-      final response = await http.get(Uri.parse(apiUrl));
-
-      if (response.statusCode == 200) {
-        List<dynamic> staffList = jsonDecode(response.body);
-
-        if (staffList.isNotEmpty) {
-          List<String> ids = staffList.map<String>((staff) => staff['id']).toList();
-
-          ids.sort((a, b) => b.compareTo(a));
-
-          String latestId = ids.first;
-
-          newStaffId = generateNextStaffId(latestId);
-        } else {
-          newStaffId = "S0001";
-        }
-      } else {
-        if (kDebugMode) {
-          print('Failed to fetch staff list: ${response.statusCode}');
-        }
-      }
-    } catch (error) {
-      if (kDebugMode) {
-        print('Error fetching staff ID: $error');
-      }
-    }
-
-    notifyListeners();
+  String generateNewStaffId() {
+    int seconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    String staffNumber = (seconds % 100000).toString().padLeft(5, '0');
+    return "S$staffNumber";
   }
 
   String generateNextStaffId(String latestId) {
@@ -81,6 +53,15 @@ class NewEmployee with ChangeNotifier {
   Future<void> sendStaff(BuildContext context) async {
     String apiUrl =
        uriAPIService.apiUrlStaffRegister;
+
+    newStaffId = generateNewStaffId();
+
+    if (roleController.text.toLowerCase() == 'admin') {
+      showCustomToast(context, 'Chức vụ không được là admin');
+      notifyListeners();
+      return;
+    }
+
 
     Staff newStaff = Staff(
       sid: newStaffId,
@@ -117,7 +98,6 @@ class NewEmployee with ChangeNotifier {
 
         await fetchStaffs();
 
-        await fetchLatestStaffId();
       } else {
         if (kDebugMode) {
           print('Failed to send staff data: ${response.statusCode}');
@@ -147,7 +127,17 @@ class NewEmployee with ChangeNotifier {
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
 
-        staffs = data.map((item) => Staff.fromJson(item)).toList();
+        staffs.clear();
+        admin.clear();
+
+        for (var item in data) {
+          Staff staff = Staff.fromJson(item);
+          if (staff.role == "admin") {
+            admin.add(staff);
+          } else {
+            staffs.add(staff);
+          }
+        }
 
         notifyListeners();
       } else {
@@ -200,6 +190,7 @@ class NewEmployee with ChangeNotifier {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: const Text('Xác nhận xoá'),
           content: const Text('Bạn có chắc chắn muốn xoá nhân viên này không?'),
           actions: <Widget>[

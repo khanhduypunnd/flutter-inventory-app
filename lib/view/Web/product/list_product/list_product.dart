@@ -1,5 +1,7 @@
+import 'package:dacntt1_mobile_admin/view_model/product/list_product.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../../shared/core/services/uriApi.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 import '../../../../../data/product.dart';
@@ -15,83 +17,21 @@ class ListProduct extends StatefulWidget {
 }
 
 class _ListProductState extends State<ListProduct> {
-  final ApiService uriAPIService = ApiService();
-
-  late int rowsPerPage = 20;
-  int currentPage = 1;
-  int totalProducts = 0;
-  List<dynamic> products = [];
-  bool isLoading = false;
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    _fetchProducts();
-  }
-
-  Future<void> _fetchProducts() async {
-    setState(() {
-      isLoading = true;
+    Future.microtask(() {
+      Provider.of<ListProductModel>(context, listen: false).fetchProducts(context);
     });
-
-    try {
-      final url = Uri.parse(uriAPIService.apiUrlProduct);
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        // print('API Response: ${response.body}');
-        final List<dynamic> jsonData = json.decode(response.body);
-
-        setState(() {
-          products = jsonData.map((data) {
-            return Product.fromJson(data);
-          }).toList();
-          totalProducts = products.length;
-        });
-      } else {
-        throw Exception('Failed to fetch products: ${response.statusCode}');
-      }
-    } catch (error) {
-      print('Error fetching products: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi khi tải sản phẩm: $error')),
-      );
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  void _updateProductsByPage(int pageIndex) {
-    setState(() {
-      currentPage = pageIndex;
-    });
-  }
-
-  List<dynamic> _getPaginatedProducts() {
-    int startIndex = (currentPage - 1) * rowsPerPage;
-    int endIndex = startIndex + rowsPerPage;
-    return products.sublist(
-      startIndex,
-      endIndex > products.length ? products.length : endIndex,
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    int totalPages = (totalProducts / rowsPerPage).ceil();
-    const int maxPagesToShow = 5;
+    final listProductModel = Provider.of<ListProductModel>(context);
 
-    int startPage = (currentPage - maxPagesToShow ~/ 2) > 0
-        ? (currentPage - maxPagesToShow ~/ 2)
-        : 1;
-
-    int endPage = startPage + maxPagesToShow - 1;
-    if (endPage > totalPages) {
-      endPage = totalPages;
-      startPage = totalPages - maxPagesToShow + 1;
-    }
+    int totalPages = listProductModel.totalPages;
 
     final double screenWidth = MediaQuery.of(context).size.width;
 
@@ -99,9 +39,9 @@ class _ListProductState extends State<ListProduct> {
       backgroundColor: AppColors.backgroundColor,
       body: Padding(
         padding:
-            const EdgeInsets.only(left: 50, right: 50, bottom: 30, top: 50),
+            const EdgeInsets.only(left: 5, right: 5, bottom: 3, top: 5),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border.all(color: Colors.grey, width: 1),
@@ -118,7 +58,7 @@ class _ListProductState extends State<ListProduct> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(1),
                   child: Row(
                     children: [
                       const Expanded(
@@ -133,7 +73,7 @@ class _ListProductState extends State<ListProduct> {
                     ],
                   ),
                 ),
-                isLoading
+                listProductModel. isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
@@ -149,8 +89,8 @@ class _ListProductState extends State<ListProduct> {
                               DataColumn(label: Text('Danh mục')),
                               DataColumn(label: Text('Tồn kho')),
                             ],
-                            rows: _getPaginatedProducts().map((product) {
-                              final Product prod = product as Product;
+                            rows: listProductModel.displayedProducts.map((product) {
+                              final Product prod = product;
                               return DataRow(cells: [
                                 DataCell(
                                   Text(prod.name),
@@ -184,108 +124,68 @@ class _ListProductState extends State<ListProduct> {
                         ),
                       ),
                 const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    PopupMenuButton<int>(
-                      onSelected: (value) {
-                        setState(() {
-                          rowsPerPage = value;
-                          currentPage = 1;
-                        });
-                      },
-                      itemBuilder: (BuildContext context) {
-                        return [
-                          const PopupMenuItem<int>(
-                            value: 10,
-                            child: Text("Hiển thị 10"),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      PopupMenuButton<int>(
+                        color: Colors.white,
+                        onSelected: (value) {
+                          listProductModel.setRowsPerPage(value);
+                        },
+                        itemBuilder: (BuildContext context) {
+                          return [
+                            const PopupMenuItem<int>(value: 10, child: Text("Hiển thị 10")),
+                            const PopupMenuItem<int>(value: 20, child: Text("Hiển thị 20")),
+                            const PopupMenuItem<int>(value: 50, child: Text("Hiển thị 50")),
+                          ];
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(5),
                           ),
-                          const PopupMenuItem<int>(
-                            value: 20,
-                            child: Text("Hiển thị 20"),
+                          child: Row(
+                            children: [
+                              Text("Hiển thị ${listProductModel.rowsPerPage}", style: const TextStyle(fontSize: 16)),
+                              const Icon(Icons.arrow_drop_down),
+                            ],
                           ),
-                          const PopupMenuItem<int>(
-                            value: 50,
-                            child: Text("Hiển thị 50"),
-                          ),
-                        ];
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Row(
-                          children: [
-                            Text("Hiển thị $rowsPerPage",
-                                style: const TextStyle(fontSize: 16)),
-                            const Icon(Icons.arrow_drop_down),
-                          ],
                         ),
                       ),
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.first_page),
-                          onPressed: currentPage > 1
-                              ? () {
-                                  _updateProductsByPage(1);
-                                }
-                              : null,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.chevron_left),
-                          onPressed: currentPage > 1
-                              ? () {
-                                  _updateProductsByPage(currentPage - 1);
-                                }
-                              : null,
-                        ),
-                        Row(
-                          children: List.generate(
-                            totalPages,
-                            (index) => Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 4.0),
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: currentPage == index + 1
-                                      ? Colors.blue
-                                      : Colors.grey[300],
-                                  foregroundColor: currentPage == index + 1
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                                onPressed: () {
-                                  _updateProductsByPage(index + 1);
-                                },
-                                child: Text('${index + 1}'),
-                              ),
-                            ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.first_page),
+                            onPressed: listProductModel.currentPage > 1
+                                ? () => listProductModel.goToPage(1)
+                                : null,
                           ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.chevron_right),
-                          onPressed: currentPage < totalPages
-                              ? () {
-                                  _updateProductsByPage(currentPage + 1);
-                                }
-                              : null,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.last_page),
-                          onPressed: currentPage < totalPages
-                              ? () {
-                                  _updateProductsByPage(totalPages);
-                                }
-                              : null,
-                        ),
-                      ],
-                    ),
-                  ],
+                          IconButton(
+                            icon: const Icon(Icons.chevron_left),
+                            onPressed: listProductModel.currentPage > 1
+                                ? () => listProductModel.goToPage(listProductModel.currentPage - 1)
+                                : null,
+                          ),
+                          Text("Trang ${listProductModel.currentPage}/$totalPages"),
+                          IconButton(
+                            icon: const Icon(Icons.chevron_right),
+                            onPressed: listProductModel.currentPage < totalPages
+                                ? () => listProductModel.goToPage(listProductModel.currentPage + 1)
+                                : null,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.last_page),
+                            onPressed: listProductModel.currentPage < totalPages
+                                ? () => listProductModel.goToPage(totalPages)
+                                : null,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

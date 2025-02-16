@@ -4,11 +4,11 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
-import '../data/customer.dart';
-import '../data/order.dart';
-import '../shared/core/services/uriApi.dart';
+import '../../data/customer.dart';
+import '../../data/order.dart';
+import '../../shared/core/services/uriApi.dart';
 
-class ListOrderModel extends ChangeNotifier{
+class ListOrderModel extends ChangeNotifier {
   final ApiService uriAPIService = ApiService();
 
   List<Order> orders = [];
@@ -16,37 +16,40 @@ class ListOrderModel extends ChangeNotifier{
 
   int rowsPerPage = 20;
   int currentPage = 1;
-  int totalOrders = 50;
+  List<Order> displayedOrders = [];
   bool isLoading = false;
 
-  Future<void> fetchOrders() async{
+  Future<void> fetchOrders() async {
+    if (orders.isNotEmpty) {
+      _updateDisplayedOrders();
+      return;
+    }
     isLoading = true;
     notifyListeners();
 
-    final int startIndex = (currentPage - 1) * rowsPerPage;
-    final String apiUrl =
-        uriAPIService.apiUrlOrder;
+    final String apiUrl = uriAPIService.apiUrlOrder;
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
-        List<Order> allOrders = jsonData.map((data) => Order.fromJson(data)).toList();
+        List<Order> allOrders =
+            jsonData.map((data) => Order.fromJson(data)).toList();
 
         List<Order> filteredOrders = allOrders.toList();
+
         filteredOrders.sort((a, b) => b.date.compareTo(a.date));
+
         orders = filteredOrders;
 
-        totalOrders = orders.length;
-
-        notifyListeners();
+        _updateDisplayedOrders();
       } else {
         if (kDebugMode) {
           print('Failed to fetch orders: ${response.statusCode}');
         }
       }
-    }catch (error) {
+    } catch (error) {
       if (kDebugMode) {
         print('Error fetching orders: $error');
       }
@@ -56,19 +59,46 @@ class ListOrderModel extends ChangeNotifier{
     notifyListeners();
   }
 
+  void _updateDisplayedOrders() {
+    int startIndex = (currentPage - 1) * rowsPerPage;
+    int endIndex = startIndex + rowsPerPage;
+    if (orders.isEmpty) {
+      displayedOrders = [];
+    } else {
+      displayedOrders = orders.sublist(
+        startIndex,
+        endIndex > orders.length ? orders.length : endIndex,
+      );
+    }
+    notifyListeners();
+  }
+
+  void setRowsPerPage(int value) {
+    rowsPerPage = value;
+    currentPage = 1;
+    _updateDisplayedOrders();
+  }
+
+  void goToPage(int page) {
+    if (page > 0 && page <= totalPages) {
+      currentPage = page;
+      _updateDisplayedOrders();
+    }
+  }
+
+  int get totalPages => (orders.length / rowsPerPage).ceil();
+
   Future<void> fetchCustomers() async {
     isLoading = true;
-
-
+    notifyListeners();
     try {
-      final url = Uri.parse(
-          uriAPIService.apiUrlCustomer);
+      final url = Uri.parse(uriAPIService.apiUrlCustomer);
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
         final customer =
-        jsonData.map((data) => Customer.fromJson(data)).toList();
+            jsonData.map((data) => Customer.fromJson(data)).toList();
         customers.clear();
         customers.addAll(customer);
       } else {
@@ -84,12 +114,19 @@ class ListOrderModel extends ChangeNotifier{
 
   String getCustomerName(String id) {
     final customer = customers.firstWhere(
-          (c) => c.id == id,
-      orElse: () => Customer(id: '', cid: '', name: 'Không xác định', email: '', dob: DateTime.now(), pass: '',phone: '', address: ''),
+      (c) => c.id == id,
+      orElse: () => Customer(
+          id: '',
+          cid: '',
+          name: 'Không xác định',
+          email: '',
+          dob: DateTime.now(),
+          pass: '',
+          phone: '',
+          address: ''),
     );
     return customer.name;
   }
-
 
   String getStatusText(int status) {
     switch (status) {
@@ -110,8 +147,6 @@ class ListOrderModel extends ChangeNotifier{
     }
   }
 
-
-
   Color getStatusColor(int status) {
     switch (status) {
       case 0:
@@ -130,7 +165,4 @@ class ListOrderModel extends ChangeNotifier{
         return Colors.grey;
     }
   }
-
-
-
 }

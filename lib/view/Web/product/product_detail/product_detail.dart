@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../data/product.dart';
-import '../../../../view_model/product_detail.dart';
+import '../../../../view_model/product/product_detail.dart';
 import 'widget/general_container.dart';
 import 'widget/price_container.dart';
 import 'widget/add_image.dart';

@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
-import '../data/product.dart';
-import '../shared/core/services/uriApi.dart';
-import '../view/Web/product/product_detail/widget/price_container.dart';
+import '../../data/product.dart';
+import '../../shared/core/services/uriApi.dart';
+import '../../view/Web/product/product_detail/widget/price_container.dart';
 
 class ProductDetailModel extends ChangeNotifier {
   final ApiService uriAPIService = ApiService();

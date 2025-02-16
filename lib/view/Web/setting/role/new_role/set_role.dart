@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../../view_model/new_employee.dart';
+import '../../../../../view_model/setting/new_employee.dart';
 
 class PermissionSetting extends StatefulWidget {
   const PermissionSetting({Key? key}) : super(key: key);
