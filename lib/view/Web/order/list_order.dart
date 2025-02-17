@@ -31,21 +31,6 @@ class _ListOrderState extends State<ListOrder> {
   Widget build(BuildContext context) {
     final ordersModel = Provider.of<ListOrderModel>(context);
     int totalPages = ordersModel.totalPages;
-    // const int maxPagesToShow = 5;
-    //
-    // int startPage = ordersModel.currentPage - (maxPagesToShow ~/ 2);
-    // int endPage = ordersModel.currentPage + (maxPagesToShow ~/ 2);
-    //
-    // if (startPage < 1) {
-    //   startPage = 1;
-    //   endPage = maxPagesToShow;
-    // }
-    //
-    // if (endPage > totalPages) {
-    //   endPage = totalPages;
-    //   startPage = totalPages - maxPagesToShow + 1;
-    //   if (startPage < 1) startPage = 1;
-    // }
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -72,15 +57,18 @@ class _ListOrderState extends State<ListOrder> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(10.0),
-                      child: const Row(
+                      child: Row(
                         children: [
                           Expanded(
                             child: TextField(
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 prefixIcon: Icon(Icons.search),
                                 hintText: "Tìm kiếm đơn hàng...",
                                 border: OutlineInputBorder(),
                               ),
+                              onChanged: (query) {
+                                ordersModel.onSearchOrder(query);
+                              },
                             ),
                           ),
                         ],
@@ -125,7 +113,7 @@ class _ListOrderState extends State<ListOrder> {
                                                         FontWeight.bold),
                                               )),
                                               DataCell(Text(
-                                                  order.totalPrice.toString())),
+                                                  ordersModel.formatPrice(order.totalPrice))),
                                               DataCell(Text(order.channel)),
                                             ],
                                           ))

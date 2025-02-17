@@ -213,6 +213,7 @@ class NewProductModel extends ChangeNotifier {
     notesController.clear();
     originController.clear();
     desController.clear();
+    imageUrl = '';
     usageController.clear();
     variants.clear();
     selectedAttribute = null;

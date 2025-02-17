@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 
 import '../../data/customer.dart';
 import '../../data/order.dart';
@@ -13,6 +14,10 @@ class ListOrderModel extends ChangeNotifier {
 
   List<Order> orders = [];
   List<Customer> customers = [];
+
+  String searchQuery = "";
+  List<Order> filteredOrders = [];
+
 
   int rowsPerPage = 20;
   int currentPage = 1;
@@ -62,12 +67,12 @@ class ListOrderModel extends ChangeNotifier {
   void _updateDisplayedOrders() {
     int startIndex = (currentPage - 1) * rowsPerPage;
     int endIndex = startIndex + rowsPerPage;
-    if (orders.isEmpty) {
+    if (filteredOrders.isEmpty) {
       displayedOrders = [];
     } else {
-      displayedOrders = orders.sublist(
+      displayedOrders = filteredOrders.sublist(
         startIndex,
-        endIndex > orders.length ? orders.length : endIndex,
+        endIndex > filteredOrders.length ? filteredOrders.length : endIndex,
       );
     }
     notifyListeners();
@@ -165,4 +170,29 @@ class ListOrderModel extends ChangeNotifier {
         return Colors.grey;
     }
   }
+
+  String formatPrice(double price) {
+    final format = NumberFormat("#,##0", "en_US");
+    return format.format(price);
+  }
+
+  void onSearchOrder(String query) {
+    searchQuery = query.toLowerCase().trim();
+
+    print("Search query: $searchQuery");
+    print("Total orders: ${orders.length}");
+
+    if (query.isEmpty) {
+      filteredOrders = orders;
+    } else {
+      filteredOrders = orders.where((order) {
+        return order.id.toLowerCase().contains(searchQuery);
+      }).toList();
+    }
+
+    _updateDisplayedOrders();
+    notifyListeners();
+  }
+
+
 }

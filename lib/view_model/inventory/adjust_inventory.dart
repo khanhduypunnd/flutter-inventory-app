@@ -27,7 +27,6 @@ class AdjustInventoryModel extends ChangeNotifier {
   late String staffId = '';
   late String staffName = '';
 
-
   Future<void> fetchProducts(BuildContext context) async {
     isLoading = true;
     notifyListeners();
@@ -78,29 +77,32 @@ class AdjustInventoryModel extends ChangeNotifier {
             for (var size in selectedSizes) {
               if (!selectedProducts
                   .any((p) => p.id == product.id && p.sizes.contains(size))) {
-                selectedProducts.add(Product(
-                  id: product.id,
-                  name: product.name,
-                  supplier: product.supplier,
-                  category: product.category,
-                  usage: product.usage,
-                  origin: product.origin,
-                  description: product.description,
-                  notes: product.notes,
-                  sizes: [size],
-                  actualPrices: [0],
-                  sellPrices: [0],
-                  quantities: [0],
-                  image: product.image,
-                  averageRating: product.averageRating,
-                  totalReviews: product.totalReviews,
-                ));
+                final int index = product.sizes.indexOf(size);
 
-                if (!quantityControllers.containsKey(product.id)) {
-                  quantityControllers[product.id] = {};
+                if (index != -1) {
+                  selectedProducts.add(Product(
+                    id: product.id,
+                    name: product.name,
+                    supplier: product.supplier,
+                    category: product.category,
+                    usage: product.usage,
+                    origin: product.origin,
+                    description: product.description,
+                    notes: product.notes,
+                    sizes: [size],
+                    actualPrices: [product.actualPrices[index]],
+                    sellPrices: [product.sellPrices[index]],
+                    quantities: [product.quantities[index]],
+                    image: product.image,
+                    averageRating: product.averageRating,
+                    totalReviews: product.totalReviews,
+                  ));
+
+                  if (!quantityControllers.containsKey(product.id)) {
+                    quantityControllers[product.id] = {};
+                  }
+                  quantityControllers[product.id]![size] = TextEditingController(text: "");
                 }
-                quantityControllers[product.id]![size] =
-                    TextEditingController(text: "");
               }
             }
             notifyListeners();
@@ -126,10 +128,10 @@ class AdjustInventoryModel extends ChangeNotifier {
       });
     });
 
-      increaseAmount = totalIncrease;
-      decreaseAmount = totalDecrease;
+    increaseAmount = totalIncrease;
+    decreaseAmount = totalDecrease;
 
-      notifyListeners();
+    notifyListeners();
   }
 
   String generateGanId(int currentId) {
@@ -147,7 +149,8 @@ class AdjustInventoryModel extends ChangeNotifier {
     return prefs.getInt('currentId') ?? 1;
   }
 
-  Future<void> sendGan(BuildContext context,List<GANDetail> details, String staffId) async {
+  Future<void> sendGan(
+      BuildContext context, List<GANDetail> details, String staffId) async {
     isLoading = true;
     notifyListeners();
 
@@ -158,7 +161,7 @@ class AdjustInventoryModel extends ChangeNotifier {
     final Map<String, dynamic> ganData = {
       'ganId': newGanId,
       'sId': staffId,
-      'date': DateTime.now(),
+      'date': DateTime.now().toIso8601String(),
       'increasedQuantity': increaseAmount,
       'descreaedQuantity': decreaseAmount,
       'note': noteController.text,
@@ -182,14 +185,11 @@ class AdjustInventoryModel extends ChangeNotifier {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         showCustomToast(context, 'Đã điều chỉnh');
-
-        currentId++;
-        await saveCurrentId(currentId);
       } else {
         showCustomToast(context, 'Điều chỉnh không thành công');
       }
     } catch (error) {
-        print('Error sending data: $error');
+      print('Error sending data: $error');
       showCustomToast(context, 'Điều chỉnh không thành công');
     }
 
@@ -222,7 +222,6 @@ class AdjustInventoryModel extends ChangeNotifier {
           }
 
           productData['quantities'][sizeIndex] = detail.newQuantity;
-          print(productData);
 
           final urlPut =
               Uri.parse('${uriAPIService.apiUrlProduct}/${detail.productId}');
@@ -262,12 +261,12 @@ class AdjustInventoryModel extends ChangeNotifier {
   }
 
   void clearForm() {
-  selectedProducts.clear();
-  quantityControllers.clear();
-  noteController.clear();
-  increaseAmount = 0;
-  decreaseAmount = 0;
-  notifyListeners();
+    selectedProducts.clear();
+    quantityControllers.clear();
+    noteController.clear();
+    increaseAmount = 0;
+    decreaseAmount = 0;
+    notifyListeners();
   }
 
   void showCustomToast(BuildContext context, String message) {

@@ -15,6 +15,10 @@ class ListProductModel extends ChangeNotifier {
   int totalProducts = 0;
   bool isLoading = false;
 
+  String searchQuery = "";
+  List<Product> filteredProducts = [];
+
+
   Future<void> fetchProducts(BuildContext context) async {
     if (products.isNotEmpty) {
       _updateDisplayedProducts();
@@ -49,8 +53,14 @@ class ListProductModel extends ChangeNotifier {
   void _updateDisplayedProducts() {
     int startIndex = (currentPage - 1) * rowsPerPage;
     int endIndex = startIndex + rowsPerPage;
-    displayedProducts = products.sublist(
-        startIndex, endIndex > products.length ? products.length : endIndex);
+    if (filteredProducts.isEmpty) {
+      displayedProducts = [];
+    } else {
+      displayedProducts = filteredProducts.sublist(
+        startIndex,
+        endIndex > filteredProducts.length ? filteredProducts.length : endIndex,
+      );
+    }
     notifyListeners();
   }
 
@@ -68,6 +78,25 @@ class ListProductModel extends ChangeNotifier {
   }
 
   int get totalPages => (products.length / rowsPerPage).ceil();
+
+
+  void onSearchProduct(String query) {
+    searchQuery = query.toLowerCase().trim();
+
+    if (query.isEmpty) {
+      filteredProducts = products;
+    } else {
+      filteredProducts = products.where((product) {
+        return product.name.toLowerCase().contains(searchQuery) ||
+            product.supplier.toLowerCase().contains(searchQuery);
+      }).toList();
+    }
+
+    _updateDisplayedProducts();
+    notifyListeners();
+  }
+
+
 
   void showCustomToast(BuildContext context, String message) {
     final overlay = Overlay.of(context);

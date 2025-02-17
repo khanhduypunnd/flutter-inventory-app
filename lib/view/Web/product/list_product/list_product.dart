@@ -61,13 +61,16 @@ class _ListProductState extends State<ListProduct> {
                   padding: const EdgeInsets.all(1),
                   child: Row(
                     children: [
-                      const Expanded(
+                       Expanded(
                         child: TextField(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             prefixIcon: Icon(Icons.search),
                             hintText: "Tìm kiếm sản phẩm...",
                             border: OutlineInputBorder(),
                           ),
+                          onChanged: (query) {
+                            listProductModel.onSearchProduct(query);
+                          },
                         ),
                       ),
                     ],
