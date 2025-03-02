@@ -49,6 +49,8 @@ class ListOrderModel extends ChangeNotifier {
         orders = filteredOrders;
 
         _updateDisplayedOrders();
+
+        notifyListeners();
       } else {
         if (kDebugMode) {
           print('Failed to fetch orders: ${response.statusCode}');
@@ -67,12 +69,12 @@ class ListOrderModel extends ChangeNotifier {
   void _updateDisplayedOrders() {
     int startIndex = (currentPage - 1) * rowsPerPage;
     int endIndex = startIndex + rowsPerPage;
-    if (filteredOrders.isEmpty) {
+    if (orders.isEmpty) {
       displayedOrders = [];
     } else {
-      displayedOrders = filteredOrders.sublist(
+      displayedOrders = orders.sublist(
         startIndex,
-        endIndex > filteredOrders.length ? filteredOrders.length : endIndex,
+        endIndex > orders.length ? orders.length : endIndex,
       );
     }
     notifyListeners();

@@ -87,7 +87,7 @@ class SummaryCards extends StatelessWidget {
 
   Widget _buildInfoCard(String title, String value) {
     final Map<String, Color> titleColorMap = {
-      'Tổng lượng tồn': const Color(0xFFff938a),
+      'Tổng lượng tồn': const Color(0xFFd01b1e),
       'Tổng giá trị': const Color(0xFF3ca8fc),
       'Tổng lợi nhuận': const Color(0xFF3cfca8),
       'Tổng giá bán': const Color(0xFFff7df9),

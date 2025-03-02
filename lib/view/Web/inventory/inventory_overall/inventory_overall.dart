@@ -79,6 +79,8 @@ class _InventoryOverallState extends State<InventoryOverall> {
                     child: Column(
                       children: [
                         const TabBar(
+                          labelColor: Colors.blueAccent,
+                          indicatorColor: Colors.blueAccent,
                           tabs: [
                             Tab(text: 'Sản phẩm còn hàng'),
                             Tab(text: 'Sản phẩm hết hàng'),

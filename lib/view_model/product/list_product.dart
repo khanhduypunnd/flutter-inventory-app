@@ -39,6 +39,7 @@ class ListProductModel extends ChangeNotifier {
           return Product.fromJson(data);
         }).toList();
         _updateDisplayedProducts();
+        notifyListeners();
       } else {
         throw Exception('Failed to fetch products: ${response.statusCode}');
       }
@@ -53,12 +54,12 @@ class ListProductModel extends ChangeNotifier {
   void _updateDisplayedProducts() {
     int startIndex = (currentPage - 1) * rowsPerPage;
     int endIndex = startIndex + rowsPerPage;
-    if (filteredProducts.isEmpty) {
+    if (products.isEmpty) {
       displayedProducts = [];
     } else {
-      displayedProducts = filteredProducts.sublist(
+      displayedProducts = products.sublist(
         startIndex,
-        endIndex > filteredProducts.length ? filteredProducts.length : endIndex,
+        endIndex > products.length ? products.length : endIndex,
       );
     }
     notifyListeners();
