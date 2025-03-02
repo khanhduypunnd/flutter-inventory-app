@@ -126,15 +126,19 @@ class NewPromotionModel extends ChangeNotifier {
       if (response.statusCode == 201) {
         showCustomToast(context, 'Tạo khuyến mãi thành công!');
         _clearForm();
+        notifyListeners();
       } else {
         final errorMessage = response.body.isNotEmpty
             ? json.decode(response.body)['message']
             : 'Lỗi không xác định';
         showCustomToast(context, 'Lỗi: $errorMessage');
+        notifyListeners();
       }
     } catch (e) {
       showCustomToast(context, 'Có lỗi xảy ra: $e');
+      notifyListeners();
     }
+    notifyListeners();
   }
 
   void showCustomToast(BuildContext context, String message) {

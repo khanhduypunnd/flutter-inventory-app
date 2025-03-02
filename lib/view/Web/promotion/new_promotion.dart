@@ -35,7 +35,7 @@ class _PromotionScreenState extends State<NewPromotion> {
               children: [
                 const Spacer(),
                 ElevatedButton(
-                  onPressed:()=> newPromotionModel.submitPromotion,
+                  onPressed:()=> newPromotionModel.submitPromotion(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     foregroundColor: Colors.white,

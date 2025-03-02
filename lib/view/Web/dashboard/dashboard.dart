@@ -13,14 +13,15 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   Map<String, dynamic>? staffData;
   List<int>? roleDetail;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    Future.microtask(() {
+    // Future.microtask(() {
       Provider.of<DashboardModel>(context, listen: false).fetchOrders();
       Provider.of<DashboardModel>(context, listen: false).fetchProducts();
-    });
+    // });
   }
 
   @override
