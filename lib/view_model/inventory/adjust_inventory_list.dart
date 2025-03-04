@@ -37,8 +37,7 @@ class AdjustInventoryListModel extends ChangeNotifier {
             ganId: item['ganId'] ?? '',
             staffId: item['sId'] ?? '',
             date: DateTime.fromMillisecondsSinceEpoch(
-                    item['date']['_seconds'] * 1000).toUtc()
-                .toUtc(),
+                    item['date']['_seconds'] * 1000).toUtc(),
             increasedQuantity: item['increasedQuantity'] ?? 0,
             decreasedQuantity: item['descreaedQuantity'] ?? 0,
             note: item['note'] ?? '',
@@ -104,6 +103,21 @@ class AdjustInventoryListModel extends ChangeNotifier {
         startIndex, endIndex > adjustments.length ? adjustments.length : endIndex);
     notifyListeners();
   }
+
+  void filterAdjustments(String query) {
+    if (query.isEmpty) {
+      _updateDisplayedAdjustments();
+      return;
+    }
+
+    displayedAdjustments = adjustments.where((adjustment) {
+      return adjustment["ganId"].toString().contains(query) ||
+          adjustment["sId"].toString().contains(query);
+    }).toList();
+
+    notifyListeners();
+  }
+
 
   void setRowsPerPage(int value) {
     rowsPerPage = value;

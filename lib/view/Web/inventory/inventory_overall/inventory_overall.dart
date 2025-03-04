@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../shared/core/services/uriApi.dart';
 import '../../../../shared/core/theme/colors_app.dart';
 import '../../../../view_model/inventory/inventory_overall.dart';
 import 'widget/product_table.dart';
 import 'widget/card_infor.dart';
-import '../../../../../data/product.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class InventoryOverall extends StatefulWidget {
   final Map<String, dynamic>? staffData;
@@ -75,14 +71,17 @@ class _InventoryOverallState extends State<InventoryOverall> {
                     ],
                   ),
                   child: DefaultTabController(
-                    length: 2,
+                    length: 3,
                     child: Column(
                       children: [
                         const TabBar(
                           labelColor: Colors.blueAccent,
                           indicatorColor: Colors.blueAccent,
+                          labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          unselectedLabelStyle: TextStyle(fontSize: 16),
                           tabs: [
                             Tab(text: 'Sản phẩm còn hàng'),
+                            Tab(text: 'Sản phẩm sắp hết hàng'),
                             Tab(text: 'Sản phẩm hết hàng'),
                           ],
                         ),
@@ -93,6 +92,9 @@ class _InventoryOverallState extends State<InventoryOverall> {
                               ProductTable(
                                   maxWidth: maxWidth,
                                   productList:inventoryOverall.productsInStock),
+                              ProductTable(
+                                  maxWidth: maxWidth,
+                                  productList: inventoryOverall.productsLowStock),
                               ProductTable(
                                   maxWidth: maxWidth,
                                   productList: inventoryOverall.productsOutOfStock),

@@ -106,7 +106,7 @@ class SummaryCards extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: titleColorMap[title],
                   ),
@@ -120,7 +120,7 @@ class SummaryCards extends StatelessWidget {
                 Text(
                   value,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     color: titleColorMap[title],
                   ),
                 ),

@@ -54,12 +54,15 @@ class ListProductModel extends ChangeNotifier {
   void _updateDisplayedProducts() {
     int startIndex = (currentPage - 1) * rowsPerPage;
     int endIndex = startIndex + rowsPerPage;
-    if (products.isEmpty) {
+
+    List<Product> sourceList = searchQuery.isNotEmpty ? filteredProducts : products;
+
+    if (sourceList.isEmpty) {
       displayedProducts = [];
     } else {
-      displayedProducts = products.sublist(
+      displayedProducts = sourceList.sublist(
         startIndex,
-        endIndex > products.length ? products.length : endIndex,
+        endIndex > sourceList.length ? sourceList.length : endIndex,
       );
     }
     notifyListeners();
@@ -94,7 +97,6 @@ class ListProductModel extends ChangeNotifier {
     }
 
     _updateDisplayedProducts();
-    notifyListeners();
   }
 
 

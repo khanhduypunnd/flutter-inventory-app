@@ -13,6 +13,9 @@ class CustomerModel extends ChangeNotifier {
   int totalCustomers = 682;
   List<Customer> customers = [];
   List<Customer> displayedCustomers = [];
+  List<Customer> filteredCustomers = [];
+  String searchQuery = "";
+
   bool isLoading = false;
 
   Future<void> fetchCustomers() async {
@@ -33,6 +36,7 @@ class CustomerModel extends ChangeNotifier {
             jsonData.map((data) => Customer.fromJson(data)).toList();
         customers.clear();
         customers.addAll(customer);
+        filteredCustomers = List.from(customers);
         _updateDisplayedCustomers();
       } else {
         throw Exception('Failed to fetch customers: ${response.statusCode}');
@@ -45,11 +49,31 @@ class CustomerModel extends ChangeNotifier {
     }
   }
 
+  void onSearchCustomer(String query) {
+    searchQuery = query.toLowerCase().trim();
+
+    if (query.isEmpty) {
+      filteredCustomers = List.from(customers);
+    } else {
+      filteredCustomers = customers.where((customer) {
+        return customer.name.toLowerCase().contains(searchQuery) ||
+            customer.phone.toLowerCase().contains(searchQuery);
+      }).toList();
+    }
+
+    _updateDisplayedCustomers();
+    notifyListeners();
+  }
+
+
   void _updateDisplayedCustomers() {
     int startIndex = (currentPage - 1) * rowsPerPage;
     int endIndex = startIndex + rowsPerPage;
-    displayedCustomers = customers.sublist(
-        startIndex, endIndex > customers.length ? customers.length : endIndex);
+
+    List<Customer> sourceList = searchQuery.isEmpty ? customers : filteredCustomers;
+
+    displayedCustomers = sourceList.sublist(
+        startIndex, endIndex > sourceList.length ? sourceList.length : endIndex);
     notifyListeners();
   }
 

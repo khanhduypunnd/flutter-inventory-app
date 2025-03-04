@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'dart:convert';
@@ -13,6 +14,7 @@ class InventoryOverallModel extends ChangeNotifier {
   List<Product> listProducts = [];
   List<Product> productsInStock = [];
   List<Product> productsOutOfStock = [];
+  List<Product> productsLowStock = [];
 
   int totalStock = 0;
   double totalSalePrice = 0;
@@ -39,29 +41,38 @@ class InventoryOverallModel extends ChangeNotifier {
 
         productsInStock.clear();
         productsOutOfStock.clear();
+        productsLowStock.clear();
 
         for (var product in listProducts) {
           List<String> sizesInStock = [];
           List<String> sizesOutOfStock = [];
+          List<String> sizesLowStock = [];
 
           for (int i = 0; i < product.sizes.length; i++) {
-            (product.quantities[i] > 0 ? sizesInStock : sizesOutOfStock).add(product.sizes[i]);
+            if (product.quantities[i] > 5) {
+              sizesInStock.add(product.sizes[i]);
+            } else if (product.quantities[i] == 0) {
+              sizesOutOfStock.add(product.sizes[i]);
+            } else {
+              sizesLowStock.add(product.sizes[i]);
+            }
           }
 
           if (sizesInStock.isNotEmpty) productsInStock.add(_filteredProduct(product, sizesInStock));
           if (sizesOutOfStock.isNotEmpty) productsOutOfStock.add(_filteredProduct(product, sizesOutOfStock));
+          if (sizesLowStock.isNotEmpty) productsLowStock.add(_filteredProduct(product, sizesLowStock));
         }
 
         totalSalePrice = listProducts.fold(0.0, (sum, product) {
           return sum + product.quantities.asMap().entries
               .where((entry) => entry.value > 0)
-              .fold<double>(0.0, (subSum, entry) => subSum + (product.sellPrices[entry.key] * entry.value)); // Nhân actualPrices * quantities
+              .fold<double>(0.0, (subSum, entry) => subSum + (product.sellPrices[entry.key] * entry.value));
         });
 
         totalValue = listProducts.fold<double>(0.0, (sum, product) {
           return sum + product.quantities.asMap().entries
               .where((entry) => entry.value > 0)
-              .fold<double>(0.0, (subSum, entry) => subSum + (product.actualPrices[entry.key] * entry.value)); // Nhân actualPrices * quantities
+              .fold<double>(0.0, (subSum, entry) => subSum + (product.actualPrices[entry.key] * entry.value));
         });
 
 
@@ -76,7 +87,9 @@ class InventoryOverallModel extends ChangeNotifier {
         throw Exception('Failed to fetch products: ${response.statusCode}');
       }
     } catch (error) {
-      print('Error fetching products: $error');
+      if (kDebugMode) {
+        print('Error fetching products: $error');
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi khi tải sản phẩm: $error')),
       );

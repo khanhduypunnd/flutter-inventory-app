@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/core/theme/colors_app.dart';
 import '../../../view_model/promotion/list_promotion.dart';
@@ -145,9 +146,11 @@ class _ListPromotionState extends State<ListPromotion> {
                                       DataCell(Text(promotion["code"])),
                                       DataCell(Text(promotion["description"])),
                                       DataCell(Text('${promotion["value"]} %')),
-                                      DataCell(Text(promotion["value_limit"])),
-                                      DataCell(Text(promotion["beginning"])),
-                                      DataCell(Text(promotion["expiration"])),
+                                      DataCell(Text(listPromotionModel.formatPriceDouble(promotion["value_limit"]))),
+                                      DataCell(Text(DateFormat("yyyy-MM-dd HH:mm:ss")
+                                          .format(promotion["beginning"]))),
+                                      DataCell(Text(DateFormat("yyyy-MM-dd HH:mm:ss")
+                                          .format(promotion["expiration"]))),
                                     ]);
                                   }).toList(),
                                 ),

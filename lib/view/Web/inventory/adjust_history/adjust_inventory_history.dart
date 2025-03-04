@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../../shared/core/services/uriApi.dart';
 import '../../../../shared/core/theme/colors_app.dart';
@@ -53,7 +54,7 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
         builder: (context, constraints) {
           return SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.all(30),
+              padding: const EdgeInsets.all(30),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
@@ -67,16 +68,20 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                     ),
                   ],
                 ),
-                padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(10.0),
-                      child: const Row(
+                      child: Row(
                         children: [
                           Expanded(
                             child: TextField(
-                              decoration: InputDecoration(
+                              onChanged: (value) {
+                                Provider.of<AdjustInventoryListModel>(context, listen: false)
+                                    .filterAdjustments(value);
+                              },
+                              decoration: const InputDecoration(
                                 prefixIcon: Icon(Icons.search),
                                 hintText: "Tìm kiếm mã phiếu...",
                                 border: OutlineInputBorder(),
@@ -130,8 +135,11 @@ class _AdjustInventoryHistory extends State<AdjustInventoryHistory> {
                                                 },
                                               ),
                                               DataCell(
-                                                Text(adjustment["date"] ??
-                                                    'N/A'),
+                                                Text(DateFormat(
+                                                        "yyyy-MM-dd HH:mm:ss")
+                                                    .format(
+                                                        DateTime.parse(adjustment["date"] ??
+                                                            'N/A'))),
                                                 onTap: () {
                                                   context.go(
                                                       '/adjust_detail/${adjustment["ganId"]}',

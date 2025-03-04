@@ -27,18 +27,15 @@ class ProductTable extends StatelessWidget {
               showCheckboxColumn: false,
               columns: const [
                 DataColumn(label: Text('Tên sản phẩm', style: TextStyle(color: AppColors.titleColor, fontWeight: FontWeight.bold, fontSize: 18))),
-                // DataColumn(label: Text('Nhà cung cấp')),
-                // DataColumn(label: Text('Danh mục')),
                 DataColumn(label: Text('Size', style: TextStyle(color: AppColors.titleColor, fontWeight: FontWeight.bold, fontSize: 18))),
                 DataColumn(label: Text('Tồn kho', style: TextStyle(color: AppColors.titleColor, fontWeight: FontWeight.bold, fontSize: 18))),
               ],
               rows: productList.map((product) {
                 return DataRow(cells: [
-                  DataCell(Text(product.name)),
-                  // DataCell(Text(product.supplier)),
-                  // DataCell(Text(product.category.join(', '))),
-                  DataCell(Text(product.sizes.join(', '))),
-                  DataCell(Text(product.quantities.fold(0, (sum, q) => sum + q).toString())),
+                  DataCell(Text(product.name, style: const TextStyle(fontSize: 16))),
+                  DataCell(Text(product.sizes.join(', '), style: const TextStyle(fontSize: 16))),
+                  // DataCell(Text(product.quantities.fold(0, (sum, q) => sum + q).toString())),
+                  DataCell(Text(product.quantities.join(', '), style: const TextStyle(fontSize: 16))),
                 ]);
               }).toList(),
             ),

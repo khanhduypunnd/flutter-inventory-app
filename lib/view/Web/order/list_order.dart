@@ -1,6 +1,7 @@
 import 'package:dacntt1_mobile_admin/view_model/order/order.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
 import '../../../shared/core/theme/colors_app.dart';
@@ -25,7 +26,6 @@ class _ListOrderState extends State<ListOrder> {
       Provider.of<ListOrderModel>(context, listen: false).fetchCustomers();
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -88,20 +88,49 @@ class _ListOrderState extends State<ListOrder> {
                                 child: DataTable(
                                   columnSpacing: 16.0,
                                   columns: const <DataColumn>[
-                                    DataColumn(label: Text('Mã')),
-                                    DataColumn(label: Text('Ngày tạo')),
-                                    DataColumn(label: Text('Khách hàng')),
-                                    DataColumn(label: Text('Thanh toán')),
-                                    DataColumn(label: Text('Tổng tiền')),
-                                    DataColumn(label: Text('Kênh')),
+                                    DataColumn(
+                                        label: Text(
+                                      'Mã',
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          color: AppColors.titleColor),
+                                    )),
+                                    DataColumn(
+                                        label: Text('Ngày tạo',
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: AppColors.titleColor))),
+                                    DataColumn(
+                                        label: Text('Khách hàng',
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: AppColors.titleColor))),
+                                    DataColumn(
+                                        label: Text('Thanh toán',
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: AppColors.titleColor))),
+                                    DataColumn(
+                                        label: Text('Tổng tiền',
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: AppColors.titleColor))),
+                                    DataColumn(
+                                        label: Text('Kênh',
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: AppColors.titleColor))),
                                   ],
                                   rows: ordersModel.displayedOrders
                                       .map<DataRow>((order) => DataRow(
                                             cells: <DataCell>[
                                               DataCell(Text(order.id)),
-                                              DataCell(
-                                                  Text(order.date.toString())),
-                                              DataCell(Text(ordersModel.getCustomerName(order.cid))),
+                                              DataCell(Text(DateFormat(
+                                                      "yyyy-MM-dd HH:mm:ss")
+                                                  .format(order.date)
+                                                  .toString())),
+                                              DataCell(Text(ordersModel
+                                                  .getCustomerName(order.cid))),
                                               DataCell(Text(
                                                 ordersModel.getStatusText(
                                                     order.status),
@@ -113,7 +142,8 @@ class _ListOrderState extends State<ListOrder> {
                                                         FontWeight.bold),
                                               )),
                                               DataCell(Text(
-                                                  ordersModel.formatPrice(order.totalPrice))),
+                                                  ordersModel.formatPrice(
+                                                      order.totalPrice))),
                                               DataCell(Text(order.channel)),
                                             ],
                                           ))
@@ -122,11 +152,9 @@ class _ListOrderState extends State<ListOrder> {
                               ),
                             ),
                     ),
-
-
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      child:  Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           PopupMenuButton<int>(
@@ -136,26 +164,30 @@ class _ListOrderState extends State<ListOrder> {
                             },
                             itemBuilder: (BuildContext context) {
                               return [
-                                const PopupMenuItem<int>(value: 10, child: Text("Hiển thị 10")),
-                                const PopupMenuItem<int>(value: 20, child: Text("Hiển thị 20")),
-                                const PopupMenuItem<int>(value: 50, child: Text("Hiển thị 50")),
+                                const PopupMenuItem<int>(
+                                    value: 10, child: Text("Hiển thị 10")),
+                                const PopupMenuItem<int>(
+                                    value: 20, child: Text("Hiển thị 20")),
+                                const PopupMenuItem<int>(
+                                    value: 50, child: Text("Hiển thị 50")),
                               ];
                             },
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
                                 border: Border.all(color: Colors.grey),
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Row(
                                 children: [
-                                  Text("Hiển thị ${ordersModel.rowsPerPage}", style: const TextStyle(fontSize: 16)),
+                                  Text("Hiển thị ${ordersModel.rowsPerPage}",
+                                      style: const TextStyle(fontSize: 16)),
                                   const Icon(Icons.arrow_drop_down),
                                 ],
                               ),
                             ),
                           ),
-
                           Row(
                             children: [
                               IconButton(
@@ -167,14 +199,17 @@ class _ListOrderState extends State<ListOrder> {
                               IconButton(
                                 icon: const Icon(Icons.chevron_left),
                                 onPressed: ordersModel.currentPage > 1
-                                    ? () => ordersModel.goToPage(ordersModel.currentPage - 1)
+                                    ? () => ordersModel
+                                        .goToPage(ordersModel.currentPage - 1)
                                     : null,
                               ),
-                              Text("Trang ${ordersModel.currentPage}/$totalPages"),
+                              Text(
+                                  "Trang ${ordersModel.currentPage}/$totalPages"),
                               IconButton(
                                 icon: const Icon(Icons.chevron_right),
                                 onPressed: ordersModel.currentPage < totalPages
-                                    ? () => ordersModel.goToPage(ordersModel.currentPage + 1)
+                                    ? () => ordersModel
+                                        .goToPage(ordersModel.currentPage + 1)
                                     : null,
                               ),
                               IconButton(

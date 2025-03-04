@@ -46,7 +46,9 @@ class ListOrderModel extends ChangeNotifier {
 
         filteredOrders.sort((a, b) => b.date.compareTo(a.date));
 
-        orders = filteredOrders;
+        orders = allOrders;
+
+        filteredOrders = List.from(orders);
 
         _updateDisplayedOrders();
 
@@ -69,12 +71,14 @@ class ListOrderModel extends ChangeNotifier {
   void _updateDisplayedOrders() {
     int startIndex = (currentPage - 1) * rowsPerPage;
     int endIndex = startIndex + rowsPerPage;
-    if (orders.isEmpty) {
+
+    List<Order> sourceList = searchQuery.isEmpty ? orders : filteredOrders;
+    if (sourceList.isEmpty) {
       displayedOrders = [];
     } else {
-      displayedOrders = orders.sublist(
+      displayedOrders = sourceList.sublist(
         startIndex,
-        endIndex > orders.length ? orders.length : endIndex,
+        endIndex > sourceList.length ? sourceList.length : endIndex,
       );
     }
     notifyListeners();
@@ -180,9 +184,6 @@ class ListOrderModel extends ChangeNotifier {
 
   void onSearchOrder(String query) {
     searchQuery = query.toLowerCase().trim();
-
-    print("Search query: $searchQuery");
-    print("Total orders: ${orders.length}");
 
     if (query.isEmpty) {
       filteredOrders = orders;

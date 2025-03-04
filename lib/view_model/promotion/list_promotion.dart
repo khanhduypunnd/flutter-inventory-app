@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../shared/core/theme/colors_app.dart';
 import '../../../data/promotion.dart';
 import 'dart:convert';
@@ -12,6 +13,7 @@ class ListPromotionModel extends ChangeNotifier {
   int rowsPerPage = 20;
   int currentPage = 1;
   int totalPromotions = 0;
+  List<Map<String, dynamic>> allPromotions = [];
   List<Map<String, dynamic>> promotions = [];
   bool isLoading = false;
 
@@ -30,18 +32,20 @@ class ListPromotionModel extends ChangeNotifier {
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
 
-        promotions = jsonData.map((data) {
+        allPromotions = jsonData.map((data) {
           final promotion = Promotion.fromJson(data);
           return {
             "id": promotion.id,
             "code": promotion.code,
             "description": promotion.description,
             "value": promotion.value.toString(),
-            "value_limit": promotion.valueLimit.toString(),
-            "beginning": promotion.beginning.toIso8601String(),
-            "expiration": promotion.expiration.toIso8601String() ?? '',
+            "value_limit": promotion.valueLimit,
+            "beginning": promotion.beginning,
+            "expiration": promotion.expiration ?? '',
           };
         }).toList();
+
+        promotions = List.from(allPromotions);
         totalPromotions = promotions.length;
         selectedRows = List<bool>.filled(promotions.length, false);
       } else {
@@ -56,29 +60,37 @@ class ListPromotionModel extends ChangeNotifier {
   }
 
   void filterPromotions(String query) {
-    promotions = promotions.where((promotion) {
-      final id = promotion["id"].toLowerCase();
-      final description = promotion["description"].toLowerCase();
-      return id.contains(query.toLowerCase()) ||
-          description.contains(query.toLowerCase());
-    }).toList();
-    totalPromotions = promotions.length;
-    notifyListeners();
+    if (query.isEmpty) {
+      promotions = List.from(allPromotions);
+      notifyListeners();
+    } else {
+      promotions = promotions.where((promotion) {
+        final id = promotion["id"].toLowerCase();
+        final description = promotion["description"].toLowerCase();
+        return id.contains(query.toLowerCase()) ||
+            description.contains(query.toLowerCase());
+      }).toList();
+      totalPromotions = promotions.length;
+      notifyListeners();
+    }
   }
 
   void updateRowsPerPage(int value) {
     rowsPerPage = value;
     currentPage = 1;
+    notifyListeners();
   }
 
   void toggleSelectAll(bool? value) {
     selectAll = value ?? false;
     selectedRows = List<bool>.filled(promotions.length, selectAll);
+    notifyListeners();
   }
 
   void toggleRowSelection(int index, bool? value) {
     selectedRows[index] = value ?? false;
     selectAll = selectedRows.every((isSelected) => isSelected);
+    notifyListeners();
   }
 
   Future<void> deleteSelectedRows(BuildContext context) async {
@@ -164,5 +176,10 @@ class ListPromotionModel extends ChangeNotifier {
     Future.delayed(const Duration(seconds: 3), () {
       overlayEntry.remove();
     });
+  }
+
+  String formatPriceDouble(double price) {
+    final format = NumberFormat("#,##0", "en_US");
+    return format.format(price);
   }
 }

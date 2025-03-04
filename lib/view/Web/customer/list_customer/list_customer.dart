@@ -63,14 +63,16 @@ class _CustomerListState extends State<CustomerList> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                // Thanh tìm kiếm
                 Container(
                   padding: const EdgeInsets.all(10.0),
-                  child: const Row(
+                  child:  Row(
                     children: [
                       Expanded(
                         child: TextField(
-                          decoration: InputDecoration(
+                          onChanged: (query) {
+                            customerModel.onSearchCustomer(query);
+                          },
+                          decoration: const InputDecoration(
                             prefixIcon: Icon(Icons.search),
                             hintText: "Tìm kiếm khách hàng...",
                             border: OutlineInputBorder(),
