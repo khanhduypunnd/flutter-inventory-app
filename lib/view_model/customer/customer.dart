@@ -10,7 +10,7 @@ class CustomerModel extends ChangeNotifier {
 
   late int rowsPerPage = 20;
   int currentPage = 1;
-  int totalCustomers;
+  int totalCustomers = 10000000;
   List<Customer> customers = [];
   List<Customer> displayedCustomers = [];
   List<Customer> filteredCustomers = [];
